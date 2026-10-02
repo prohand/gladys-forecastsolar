@@ -27,7 +27,7 @@ function setup({ fail = null, createdDevices, houses } = {}) {
       return FORECAST;
     },
   });
-  app.setConfig({ kwp: 3, declination: 30 });
+  app.setConfig({ wp: 3000, declination: 30 });
   const device = { external_id: deviceIds(gladys, HOUSES[0]).device };
   return { gladys, clock, calls, app, device };
 }
@@ -138,7 +138,7 @@ test('changing the panels or the house location downloads again', async () => {
   const { app, gladys, calls, device } = setup();
   await app.loadHouses();
   await app.poll(device);
-  app.setConfig({ kwp: 6, declination: 30 });
+  app.setConfig({ wp: 6000, declination: 30 });
   await app.poll(device);
   assert.equal(calls.length, 2);
   gladys.houses = [{ ...HOUSES[0], latitude: 45.75, longitude: 4.85 }];
@@ -171,7 +171,7 @@ test('an incomplete configuration is reported and nothing is downloaded', async 
   await app.synchronize();
   await app.poll(device);
   assert.equal(calls.length, 0);
-  assert.match(gladys.connectionStatuses.at(-1).message.en, /kwp/);
+  assert.match(gladys.connectionStatuses.at(-1).message.en, /wp/);
 });
 
 test('test_forecast downloads now and summarizes each house', async () => {

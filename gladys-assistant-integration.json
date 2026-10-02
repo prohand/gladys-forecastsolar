@@ -74,19 +74,19 @@
       "max": 180
     },
     {
-      "key": "kwp",
+      "key": "wp",
       "type": "number",
       "label": {
-        "en": "Peak power (kWp)",
-        "fr": "Puissance crête (kWc)"
+        "en": "Peak power (Wp)",
+        "fr": "Puissance crête (Wc)"
       },
       "description": {
-        "en": "Installed peak power of the panels, in kilowatt-peak, e.g. 3.",
-        "fr": "Puissance crête installée des panneaux, en kilowatt-crête, par exemple 3."
+        "en": "Installed peak power of the panels, in watt-peak (whole number), e.g. 3000 for 3 kWp or 6200 for 6.2 kWp.",
+        "fr": "Puissance crête installée des panneaux, en watt-crête (nombre entier), par exemple 3000 pour 3 kWc ou 6200 pour 6,2 kWc."
       },
       "required": true,
-      "min": 0.01,
-      "max": 10000
+      "min": 10,
+      "max": 10000000
     },
     {
       "key": "api_key",

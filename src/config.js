@@ -43,7 +43,11 @@ export function normalizeConfig(raw = {}) {
     // Force the types: config may arrive as strings from a form.
     declination: toNumber(raw.declination ?? DEFAULT_CONFIG.declination),
     azimuth: toNumber(raw.azimuth ?? DEFAULT_CONFIG.azimuth),
-    kwp: toNumber(raw.kwp),
+    // Peak power is typed in Wp (whole number): Gladys renders number fields
+    // without a `step`, so the browser only accepts integers. Forecast.Solar
+    // expects kWp.
+    wp: toNumber(raw.wp),
+    kwp: toNumber(raw.wp) / 1000,
     api_key: typeof raw.api_key === 'string' ? raw.api_key.trim() : DEFAULT_CONFIG.api_key,
     refresh_interval: Number(raw.refresh_interval ?? DEFAULT_CONFIG.refresh_interval),
   };
@@ -53,7 +57,7 @@ export function normalizeConfig(raw = {}) {
 const RANGES = {
   declination: [0, 90],
   azimuth: [-180, 180],
-  kwp: [0.01, 10000],
+  wp: [10, 10000000],
   refresh_interval: [15, 1440],
 };
 

@@ -7,7 +7,7 @@ import {
   DEFAULT_CONFIG,
 } from '../src/config.js';
 
-const VALID = { kwp: 3 };
+const VALID = { wp: 3000 };
 
 test('normalizeConfig applies the defaults', () => {
   const config = normalizeConfig(VALID);
@@ -19,11 +19,12 @@ test('normalizeConfig applies the defaults', () => {
 
 test('normalizeConfig coerces numeric strings coming from a form', () => {
   const config = normalizeConfig({
-    kwp: '6.2',
+    wp: '6200',
     declination: '20',
     azimuth: '-90',
     refresh_interval: '30',
   });
+  assert.equal(config.wp, 6200);
   assert.equal(config.kwp, 6.2);
   assert.equal(config.declination, 20);
   assert.equal(config.azimuth, -90);
@@ -41,14 +42,14 @@ test('a complete config is valid', () => {
 });
 
 test('a missing peak power is reported', () => {
-  assert.deepEqual(invalidConfigKeys(normalizeConfig()), ['kwp']);
-  assert.deepEqual(invalidConfigKeys(normalizeConfig({ kwp: '' })), ['kwp']);
+  assert.deepEqual(invalidConfigKeys(normalizeConfig()), ['wp']);
+  assert.deepEqual(invalidConfigKeys(normalizeConfig({ wp: '' })), ['wp']);
 });
 
 test('out of range values are reported', () => {
-  const config = normalizeConfig({ declination: 120, azimuth: -200, kwp: 0 });
-  assert.deepEqual(invalidConfigKeys(config), ['declination', 'azimuth', 'kwp']);
+  const config = normalizeConfig({ declination: 120, azimuth: -200, wp: 0 });
+  assert.deepEqual(invalidConfigKeys(config), ['declination', 'azimuth', 'wp']);
   const message = configErrorMessage(config);
-  assert.match(message.en, /declination, azimuth, kwp/);
-  assert.match(message.fr, /declination, azimuth, kwp/);
+  assert.match(message.en, /declination, azimuth, wp/);
+  assert.match(message.fr, /declination, azimuth, wp/);
 });

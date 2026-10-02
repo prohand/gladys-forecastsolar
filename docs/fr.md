@@ -39,7 +39,7 @@ le suivi d'énergie de Gladys.
 2. Décrivez vos panneaux :
    - **Inclinaison** : 0° = à plat, 90° = vertical (souvent 30 à 35° sur un toit) ;
    - **Orientation** : 0° = sud, -90° = est, 90° = ouest, 180° = nord ;
-   - **Puissance crête** en kWc (indiquée sur votre contrat ou votre onduleur).
+   - **Puissance crête** en Wc, nombre entier (ex. 3000 pour 3 kWc ; indiquée sur votre contrat ou votre onduleur).
 3. La **clé d'API** est facultative : laissez vide pour l'offre gratuite.
 4. Enregistrez, puis ajoutez l'appareil de votre maison depuis l'onglet
    **Découverte**.
