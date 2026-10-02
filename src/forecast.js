@@ -120,3 +120,97 @@ export function computeForecastValues(forecast, now = new Date()) {
     energyTomorrow: tomorrowWh === undefined ? null : whToKwh(tomorrowWh),
   };
 }
+
+/**
+ * Energy (Wh) between two times: exact integral of the piecewise-linear power
+ * curve (the same trapezoid rule Forecast.Solar uses for `watt_hours_period`).
+ */
+export function energyBetween(forecast, from, to) {
+  const points = toPoints(forecast.watts);
+  let wh = 0;
+  for (let i = 1; i < points.length; i += 1) {
+    const [t0, v0] = points[i - 1];
+    const [t1, v1] = points[i];
+    const start = Math.max(t0, from);
+    const end = Math.min(t1, to);
+    if (end <= start || t1 === t0) {
+      continue;
+    }
+    const valueAt = (time) => v0 + ((v1 - v0) * (time - t0)) / (t1 - t0);
+    wh += ((valueAt(start) + valueAt(end)) / 2) * ((end - start) / 3600_000);
+  }
+  return wh;
+}
+
+/** Highest power (W) of the curve between two times. */
+export function maxPowerBetween(forecast, from, to) {
+  const points = toPoints(forecast.watts);
+  const inside = points.filter(([time]) => time > from && time < to).map(([, value]) => value);
+  inside.push(interpolate(points, from), interpolate(points, to));
+  return Math.max(0, ...inside);
+}
+
+/**
+ * Production profile of one day: start (sunrise point before the first
+ * positive power), end (first zero after the last positive power) and peak.
+ * Times in ms; null when the forecast does not cover the day.
+ */
+export function dayProfile(forecast, day) {
+  const points = toPoints(forecast.watts).filter(
+    ([time]) => dayKey(new Date(time), forecast.timezone) === day,
+  );
+  if (points.length === 0) {
+    return null;
+  }
+  const firstPositive = points.findIndex(([, value]) => value > 0);
+  if (firstPositive === -1) {
+    return { start: null, end: null, peakTime: null, peakPower: 0 };
+  }
+  const lastPositive = points.findLastIndex(([, value]) => value > 0);
+  const peak = points.reduce((best, point) => (point[1] > best[1] ? point : best));
+  return {
+    start: points[Math.max(0, firstPositive - 1)][0],
+    end: points[Math.min(points.length - 1, lastPositive + 1)][0],
+    peakTime: peak[0],
+    peakPower: Math.round(peak[1]),
+  };
+}
+
+/**
+ * Best window of `durationMs` between `from` and `to`: the one with the most
+ * estimated energy, tested every `stepMs` (15 min by default).
+ * @returns {{ start: number, end: number, energyWh: number } | null}
+ */
+export function bestWindow(forecast, { from, to, durationMs, stepMs = 15 * 60 * 1000 }) {
+  let best = null;
+  for (let start = Math.ceil(from / stepMs) * stepMs; start + durationMs <= to; start += stepMs) {
+    const energyWh = energyBetween(forecast, start, start + durationMs);
+    if (!best || energyWh > best.energyWh) {
+      best = { start, end: start + durationMs, energyWh };
+    }
+  }
+  return best && best.energyWh > 0 ? best : null;
+}
+
+/** "HH:MM" in the timezone of the plane. */
+export function formatTime(time, timeZone) {
+  return new Intl.DateTimeFormat('en-GB', {
+    timeZone,
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).format(new Date(time));
+}
+
+/** Time range [first point, last point] of one day of the forecast, or null. */
+export function dayRange(forecast, day) {
+  const points = toPoints(forecast.watts).filter(
+    ([time]) => dayKey(new Date(time), forecast.timezone) === day,
+  );
+  if (points.length === 0) {
+    return null;
+  }
+  return { from: points[0][0], to: points[points.length - 1][0] };
+}
+
+export { whToKwh };

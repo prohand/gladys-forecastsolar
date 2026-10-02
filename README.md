@@ -13,24 +13,34 @@ User documentation: [English](docs/en.md) · [Français](docs/fr.md).
 
 ## Features
 
-One device, **Solar forecast**, with 4 read-only sensors
-(category `energy-production-sensor`):
+Requires **Gladys 5.1.0+** (dashboard widgets and scene declarations).
 
-| Feature                          | Type               | Unit |
-| -------------------------------- | ------------------ | ---- |
-| Estimated power now              | `power`            | W    |
-| Estimated energy today           | `daily-production` | kWh  |
-| Estimated energy remaining today | `daily-production` | kWh  |
-| Estimated energy tomorrow        | `daily-production` | kWh  |
+- **Houses**: the manifest declares `"location": true`; one device per
+  **located** Gladys house is discovered. Only the devices the user adds are
+  polled, so only those consume the Forecast.Solar quota.
+- **Device** _Solar forecast (house)_, 4 read-only sensors
+  (category `energy-production-sensor`, not counted by the energy monitoring):
 
-- The forecast is downloaded every `refresh_interval` minutes (default 60)
-  and kept in memory, to respect the free plan limit (12 requests/hour/IP).
-- Gladys polls the device every minute; values are recomputed from the cache
-  (linear interpolation of the forecast curve) and published every 5 minutes.
-- On an error (rate limit, outage), the previous forecast stays in use, the
-  status is shown in the Configuration screen and the download is retried
-  15 minutes later.
-- A **Refresh the forecast now** action downloads the forecast on demand.
+  | Feature                          | Type               | Unit |
+  | -------------------------------- | ------------------ | ---- |
+  | Estimated power now              | `power`            | W    |
+  | Estimated energy today           | `daily-production` | kWh  |
+  | Estimated energy remaining today | `daily-production` | kWh  |
+  | Estimated energy tomorrow        | `daily-production` | kWh  |
+
+- **Widgets**: `solar_forecast` (live tiles, power curve, peak) and
+  `solar_best_window` (best slot for an appliance of N hours).
+- **Scene triggers**: `forecast_updated`, `production_started`,
+  `production_peak`, `production_ended` (filter: house).
+- **Scene actions**: `get_forecast`, `get_production_next_hours`,
+  `find_best_window` (outputs usable in the next actions).
+- **Manifest action**: refresh the forecast now.
+
+Rhythms (free plan: 12 requests/hour/IP): the forecast of a house is
+downloaded every `refresh_interval` minutes (default 60, 15 min after an
+error) and kept in memory; Gladys polls every minute, values are recomputed
+from the cache (linear interpolation, exact trapezoid integral for energies)
+and published every 5 minutes; production events are checked on every poll.
 
 ## Project structure
 
@@ -38,11 +48,13 @@ One device, **Solar forecast**, with 4 read-only sensors
 .
 ├─ index.js                          # SDK bootstrap + event wiring
 ├─ src/
-│  ├─ devices/
-│  │  ├─ index.js                    # device registry
-│  │  └─ solarForecast.js            # the device: discovery, poll, cache, action
+│  ├─ app.js                         # logic: houses, cache, status, handlers
+│  ├─ devices/solarForecast.js       # device payload + states
+│  ├─ widgets.js                     # dashboard widget contents
+│  ├─ scenes.js                      # scene events + scene action outputs
+│  ├─ forecast.js                    # pure computations (power, kWh, windows)
 │  ├─ forecastSolar.js               # Forecast.Solar API client
-│  ├─ forecast.js                    # pure computations (power now, kWh…)
+│  ├─ houses.js                      # located houses
 │  └─ config.js                      # config defaults, normalization, checks
 ├─ test/                             # node --test (fixture = real API answer)
 ├─ docs/en.md, docs/fr.md            # user documentation

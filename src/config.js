@@ -8,11 +8,13 @@
 //
 // This module provides defaults, normalizes the received object and checks that
 // the solar plane is fully described before any call to Forecast.Solar.
+// The location is NOT part of the config: it comes from the houses configured
+// in Gladys (see src/houses.js).
 // -----------------------------------------------------------------------------
 
 // Defaults: they MUST stay consistent with the `default` values declared in the
-// `config_schema` of the manifest. Latitude, longitude and peak power have no
-// sensible default: a wrong value would silently give a wrong forecast.
+// `config_schema` of the manifest. The peak power has no sensible default: a
+// wrong value would silently give a wrong forecast.
 export const DEFAULT_CONFIG = {
   declination: 35, // tilt in degrees, 0 = flat, 90 = vertical
   azimuth: 0, // orientation in degrees, 0 = south, -90 = east, 90 = west
@@ -39,8 +41,6 @@ export function normalizeConfig(raw = {}) {
     ...DEFAULT_CONFIG,
     ...raw,
     // Force the types: config may arrive as strings from a form.
-    latitude: toNumber(raw.latitude),
-    longitude: toNumber(raw.longitude),
     declination: toNumber(raw.declination ?? DEFAULT_CONFIG.declination),
     azimuth: toNumber(raw.azimuth ?? DEFAULT_CONFIG.azimuth),
     kwp: toNumber(raw.kwp),
@@ -51,8 +51,6 @@ export function normalizeConfig(raw = {}) {
 
 // Allowed range of each numeric field, same as the manifest `min`/`max`.
 const RANGES = {
-  latitude: [-90, 90],
-  longitude: [-180, 180],
   declination: [0, 90],
   azimuth: [-180, 180],
   kwp: [0.01, 10000],

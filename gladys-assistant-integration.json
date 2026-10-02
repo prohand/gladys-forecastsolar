@@ -8,9 +8,10 @@
   },
   "version": "1.0.0",
   "docker_image": "ghcr.io/prohand/gladys-forecastsolar:1.0.0",
-  "gladys_version": ">=4.86.0",
+  "gladys_version": ">=5.1.0",
   "cover_image": "https://raw.githubusercontent.com/prohand/gladys-forecastsolar/main/cover.png",
   "categories": ["energy"],
+  "location": true,
   "config_schema": [
     {
       "key": "intro",
@@ -20,8 +21,8 @@
         "fr": "Pour commencer"
       },
       "description": {
-        "en": "Describe your solar installation: location, tilt, orientation and peak power. The free Forecast.Solar plan needs no account (12 requests per hour). An API key is only needed for a paid plan.",
-        "fr": "Décrivez votre installation solaire : position, inclinaison, orientation et puissance crête. L'offre gratuite de Forecast.Solar ne demande aucun compte (12 requêtes par heure). La clé d'API ne sert que pour une offre payante."
+        "en": "The forecast uses the location of your houses in Gladys (Settings > Houses): one device per located house, add only the ones with solar panels. Then describe the panels below. Free plan: no account, 12 requests per hour.",
+        "fr": "La prévision utilise la position de vos maisons dans Gladys (Paramètres > Maisons) : un appareil par maison localisée, n'ajoutez que celles qui ont des panneaux. Décrivez ensuite les panneaux ci-dessous. Offre gratuite : sans compte, 12 requêtes par heure."
       },
       "links": [
         {
@@ -39,36 +40,6 @@
           }
         }
       ]
-    },
-    {
-      "key": "latitude",
-      "type": "number",
-      "label": {
-        "en": "Latitude",
-        "fr": "Latitude"
-      },
-      "description": {
-        "en": "Latitude of the solar panels, e.g. 48.8566.",
-        "fr": "Latitude des panneaux solaires, par exemple 48.8566."
-      },
-      "required": true,
-      "min": -90,
-      "max": 90
-    },
-    {
-      "key": "longitude",
-      "type": "number",
-      "label": {
-        "en": "Longitude",
-        "fr": "Longitude"
-      },
-      "description": {
-        "en": "Longitude of the solar panels, e.g. 2.3522.",
-        "fr": "Longitude des panneaux solaires, par exemple 2.3522."
-      },
-      "required": true,
-      "min": -180,
-      "max": 180
     },
     {
       "key": "declination",
@@ -155,6 +126,649 @@
         "fr": "Mettre à jour la prévision maintenant"
       },
       "timeout_seconds": 30
+    }
+  ],
+  "scene_triggers": [
+    {
+      "key": "forecast_updated",
+      "label": {
+        "en": "Solar forecast updated",
+        "fr": "Prévision solaire mise à jour"
+      },
+      "description": {
+        "en": "A new forecast was downloaded (every refresh interval).",
+        "fr": "Une nouvelle prévision a été téléchargée (à chaque intervalle de mise à jour)."
+      },
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Solar forecast",
+            "fr": "Prévision solaire"
+          },
+          "description": {
+            "en": "Leave empty for any house.",
+            "fr": "Laissez vide pour toutes les maisons."
+          }
+        }
+      ],
+      "variables": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          }
+        },
+        {
+          "key": "power_now",
+          "type": "number",
+          "label": {
+            "en": "Estimated power now (W)",
+            "fr": "Puissance estimée actuelle (W)"
+          }
+        },
+        {
+          "key": "energy_today",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy today (kWh)",
+            "fr": "Énergie estimée aujourd'hui (kWh)"
+          }
+        },
+        {
+          "key": "energy_remaining_today",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy remaining today (kWh)",
+            "fr": "Énergie estimée restante aujourd'hui (kWh)"
+          }
+        },
+        {
+          "key": "energy_tomorrow",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy tomorrow (kWh)",
+            "fr": "Énergie estimée demain (kWh)"
+          }
+        },
+        {
+          "key": "peak_power",
+          "type": "number",
+          "label": {
+            "en": "Peak power of the day (W)",
+            "fr": "Puissance du pic de la journée (W)"
+          }
+        },
+        {
+          "key": "peak_time",
+          "type": "string",
+          "label": {
+            "en": "Time of the peak (HH:MM)",
+            "fr": "Heure du pic (HH:MM)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "production_started",
+      "label": {
+        "en": "Solar production starts",
+        "fr": "Début de la production solaire"
+      },
+      "description": {
+        "en": "The estimated solar production starts (around sunrise).",
+        "fr": "La production solaire estimée commence (vers le lever du soleil)."
+      },
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Solar forecast",
+            "fr": "Prévision solaire"
+          },
+          "description": {
+            "en": "Leave empty for any house.",
+            "fr": "Laissez vide pour toutes les maisons."
+          }
+        }
+      ],
+      "variables": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          }
+        },
+        {
+          "key": "power_now",
+          "type": "number",
+          "label": {
+            "en": "Estimated power now (W)",
+            "fr": "Puissance estimée actuelle (W)"
+          }
+        },
+        {
+          "key": "energy_today",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy today (kWh)",
+            "fr": "Énergie estimée aujourd'hui (kWh)"
+          }
+        },
+        {
+          "key": "energy_remaining_today",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy remaining today (kWh)",
+            "fr": "Énergie estimée restante aujourd'hui (kWh)"
+          }
+        },
+        {
+          "key": "energy_tomorrow",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy tomorrow (kWh)",
+            "fr": "Énergie estimée demain (kWh)"
+          }
+        },
+        {
+          "key": "peak_power",
+          "type": "number",
+          "label": {
+            "en": "Peak power of the day (W)",
+            "fr": "Puissance du pic de la journée (W)"
+          }
+        },
+        {
+          "key": "peak_time",
+          "type": "string",
+          "label": {
+            "en": "Time of the peak (HH:MM)",
+            "fr": "Heure du pic (HH:MM)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "production_peak",
+      "label": {
+        "en": "Solar production peak",
+        "fr": "Pic de production solaire"
+      },
+      "description": {
+        "en": "The estimated solar production reaches its peak of the day.",
+        "fr": "La production solaire estimée atteint son pic de la journée."
+      },
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Solar forecast",
+            "fr": "Prévision solaire"
+          },
+          "description": {
+            "en": "Leave empty for any house.",
+            "fr": "Laissez vide pour toutes les maisons."
+          }
+        }
+      ],
+      "variables": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          }
+        },
+        {
+          "key": "power_now",
+          "type": "number",
+          "label": {
+            "en": "Estimated power now (W)",
+            "fr": "Puissance estimée actuelle (W)"
+          }
+        },
+        {
+          "key": "energy_today",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy today (kWh)",
+            "fr": "Énergie estimée aujourd'hui (kWh)"
+          }
+        },
+        {
+          "key": "energy_remaining_today",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy remaining today (kWh)",
+            "fr": "Énergie estimée restante aujourd'hui (kWh)"
+          }
+        },
+        {
+          "key": "energy_tomorrow",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy tomorrow (kWh)",
+            "fr": "Énergie estimée demain (kWh)"
+          }
+        },
+        {
+          "key": "peak_power",
+          "type": "number",
+          "label": {
+            "en": "Peak power of the day (W)",
+            "fr": "Puissance du pic de la journée (W)"
+          }
+        },
+        {
+          "key": "peak_time",
+          "type": "string",
+          "label": {
+            "en": "Time of the peak (HH:MM)",
+            "fr": "Heure du pic (HH:MM)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "production_ended",
+      "label": {
+        "en": "Solar production ends",
+        "fr": "Fin de la production solaire"
+      },
+      "description": {
+        "en": "The estimated solar production ends (around sunset).",
+        "fr": "La production solaire estimée s'arrête (vers le coucher du soleil)."
+      },
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Solar forecast",
+            "fr": "Prévision solaire"
+          },
+          "description": {
+            "en": "Leave empty for any house.",
+            "fr": "Laissez vide pour toutes les maisons."
+          }
+        }
+      ],
+      "variables": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          }
+        },
+        {
+          "key": "power_now",
+          "type": "number",
+          "label": {
+            "en": "Estimated power now (W)",
+            "fr": "Puissance estimée actuelle (W)"
+          }
+        },
+        {
+          "key": "energy_today",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy today (kWh)",
+            "fr": "Énergie estimée aujourd'hui (kWh)"
+          }
+        },
+        {
+          "key": "energy_remaining_today",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy remaining today (kWh)",
+            "fr": "Énergie estimée restante aujourd'hui (kWh)"
+          }
+        },
+        {
+          "key": "energy_tomorrow",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy tomorrow (kWh)",
+            "fr": "Énergie estimée demain (kWh)"
+          }
+        },
+        {
+          "key": "peak_power",
+          "type": "number",
+          "label": {
+            "en": "Peak power of the day (W)",
+            "fr": "Puissance du pic de la journée (W)"
+          }
+        },
+        {
+          "key": "peak_time",
+          "type": "string",
+          "label": {
+            "en": "Time of the peak (HH:MM)",
+            "fr": "Heure du pic (HH:MM)"
+          }
+        }
+      ]
+    }
+  ],
+  "scene_actions": [
+    {
+      "key": "get_forecast",
+      "label": {
+        "en": "Read the solar forecast",
+        "fr": "Lire la prévision solaire"
+      },
+      "description": {
+        "en": "Values of the forecast, usable in the next actions and conditions.",
+        "fr": "Valeurs de la prévision, utilisables dans les actions et conditions suivantes."
+      },
+      "timeout_seconds": 30,
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Solar forecast",
+            "fr": "Prévision solaire"
+          },
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "key": "power_now",
+          "type": "number",
+          "label": {
+            "en": "Estimated power now (W)",
+            "fr": "Puissance estimée actuelle (W)"
+          }
+        },
+        {
+          "key": "energy_today",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy today (kWh)",
+            "fr": "Énergie estimée aujourd'hui (kWh)"
+          }
+        },
+        {
+          "key": "energy_remaining_today",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy remaining today (kWh)",
+            "fr": "Énergie estimée restante aujourd'hui (kWh)"
+          }
+        },
+        {
+          "key": "energy_tomorrow",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy tomorrow (kWh)",
+            "fr": "Énergie estimée demain (kWh)"
+          }
+        },
+        {
+          "key": "peak_power",
+          "type": "number",
+          "label": {
+            "en": "Peak power of the day (W)",
+            "fr": "Puissance du pic de la journée (W)"
+          }
+        },
+        {
+          "key": "peak_time",
+          "type": "string",
+          "label": {
+            "en": "Time of the peak (HH:MM)",
+            "fr": "Heure du pic (HH:MM)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "get_production_next_hours",
+      "label": {
+        "en": "Solar production in the next hours",
+        "fr": "Production solaire des prochaines heures"
+      },
+      "description": {
+        "en": "Estimated energy produced from now over the chosen number of hours.",
+        "fr": "Énergie estimée produite à partir de maintenant sur le nombre d'heures choisi."
+      },
+      "timeout_seconds": 30,
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Solar forecast",
+            "fr": "Prévision solaire"
+          },
+          "required": true
+        },
+        {
+          "key": "hours",
+          "type": "number",
+          "label": {
+            "en": "Hours",
+            "fr": "Heures"
+          },
+          "required": true,
+          "default": 3,
+          "min": 1,
+          "max": 48
+        }
+      ],
+      "outputs": [
+        {
+          "key": "energy",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy (kWh)",
+            "fr": "Énergie estimée (kWh)"
+          }
+        },
+        {
+          "key": "average_power",
+          "type": "number",
+          "label": {
+            "en": "Average power (W)",
+            "fr": "Puissance moyenne (W)"
+          }
+        },
+        {
+          "key": "max_power",
+          "type": "number",
+          "label": {
+            "en": "Maximum power (W)",
+            "fr": "Puissance maximale (W)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "find_best_window",
+      "label": {
+        "en": "Find the best solar time slot",
+        "fr": "Trouver le meilleur créneau solaire"
+      },
+      "description": {
+        "en": "Best moment to run an appliance of the given duration on solar power.",
+        "fr": "Meilleur moment pour faire tourner un appareil de la durée choisie sur le solaire."
+      },
+      "timeout_seconds": 30,
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Solar forecast",
+            "fr": "Prévision solaire"
+          },
+          "required": true
+        },
+        {
+          "key": "duration_hours",
+          "type": "number",
+          "label": {
+            "en": "Duration (hours)",
+            "fr": "Durée (heures)"
+          },
+          "required": true,
+          "default": 2,
+          "min": 0.25,
+          "max": 12
+        },
+        {
+          "key": "day",
+          "type": "select",
+          "label": {
+            "en": "Day",
+            "fr": "Jour"
+          },
+          "required": true,
+          "default": "today",
+          "display": "radio",
+          "options": [
+            {
+              "value": "today",
+              "label": {
+                "en": "Today (from now)",
+                "fr": "Aujourd'hui (à partir de maintenant)"
+              }
+            },
+            {
+              "value": "tomorrow",
+              "label": {
+                "en": "Tomorrow",
+                "fr": "Demain"
+              }
+            }
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "key": "found",
+          "type": "boolean",
+          "label": {
+            "en": "Slot found",
+            "fr": "Créneau trouvé"
+          }
+        },
+        {
+          "key": "start_time",
+          "type": "string",
+          "label": {
+            "en": "Start time (HH:MM)",
+            "fr": "Heure de début (HH:MM)"
+          }
+        },
+        {
+          "key": "end_time",
+          "type": "string",
+          "label": {
+            "en": "End time (HH:MM)",
+            "fr": "Heure de fin (HH:MM)"
+          }
+        },
+        {
+          "key": "energy",
+          "type": "number",
+          "label": {
+            "en": "Estimated energy in the slot (kWh)",
+            "fr": "Énergie estimée sur le créneau (kWh)"
+          }
+        },
+        {
+          "key": "minutes_until_start",
+          "type": "number",
+          "label": {
+            "en": "Minutes until the start",
+            "fr": "Minutes avant le début"
+          }
+        }
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "key": "solar_forecast",
+      "label": {
+        "en": "Solar forecast",
+        "fr": "Prévision solaire"
+      },
+      "description": {
+        "en": "Power now, energy today and tomorrow, and the power curve.",
+        "fr": "Puissance actuelle, énergie du jour et du lendemain, et la courbe."
+      },
+      "icon": "sun",
+      "settings": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Solar forecast",
+            "fr": "Prévision solaire"
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "key": "solar_best_window",
+      "label": {
+        "en": "Best solar time slot",
+        "fr": "Meilleur créneau solaire"
+      },
+      "description": {
+        "en": "When to run an appliance on solar power, today and tomorrow.",
+        "fr": "Quand lancer un appareil sur le solaire, aujourd'hui et demain."
+      },
+      "icon": "clock",
+      "settings": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Solar forecast",
+            "fr": "Prévision solaire"
+          },
+          "required": true
+        },
+        {
+          "key": "duration_hours",
+          "type": "number",
+          "label": {
+            "en": "Appliance duration (hours)",
+            "fr": "Durée de l'appareil (heures)"
+          },
+          "required": true,
+          "default": 2,
+          "min": 0.25,
+          "max": 12
+        }
+      ]
     }
   ]
 }

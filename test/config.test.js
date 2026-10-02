@@ -7,7 +7,7 @@ import {
   DEFAULT_CONFIG,
 } from '../src/config.js';
 
-const VALID = { latitude: 48.8566, longitude: 2.3522, kwp: 3 };
+const VALID = { kwp: 3 };
 
 test('normalizeConfig applies the defaults', () => {
   const config = normalizeConfig(VALID);
@@ -19,15 +19,11 @@ test('normalizeConfig applies the defaults', () => {
 
 test('normalizeConfig coerces numeric strings coming from a form', () => {
   const config = normalizeConfig({
-    latitude: '45.5',
-    longitude: '-73.6',
     kwp: '6.2',
     declination: '20',
     azimuth: '-90',
     refresh_interval: '30',
   });
-  assert.equal(config.latitude, 45.5);
-  assert.equal(config.longitude, -73.6);
   assert.equal(config.kwp, 6.2);
   assert.equal(config.declination, 20);
   assert.equal(config.azimuth, -90);
@@ -44,13 +40,13 @@ test('a complete config is valid', () => {
   assert.equal(configErrorMessage(config), null);
 });
 
-test('missing location and peak power are reported', () => {
-  assert.deepEqual(invalidConfigKeys(normalizeConfig()), ['latitude', 'longitude', 'kwp']);
-  assert.deepEqual(invalidConfigKeys(normalizeConfig({ ...VALID, latitude: '' })), ['latitude']);
+test('a missing peak power is reported', () => {
+  assert.deepEqual(invalidConfigKeys(normalizeConfig()), ['kwp']);
+  assert.deepEqual(invalidConfigKeys(normalizeConfig({ kwp: '' })), ['kwp']);
 });
 
 test('out of range values are reported', () => {
-  const config = normalizeConfig({ ...VALID, declination: 120, azimuth: -200, kwp: 0 });
+  const config = normalizeConfig({ declination: 120, azimuth: -200, kwp: 0 });
   assert.deepEqual(invalidConfigKeys(config), ['declination', 'azimuth', 'kwp']);
   const message = configErrorMessage(config);
   assert.match(message.en, /declination, azimuth, kwp/);

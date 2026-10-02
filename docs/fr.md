@@ -4,9 +4,24 @@ Cette intégration affiche dans Gladys la **prévision de production** de vos
 panneaux solaires, calculée par le service gratuit
 [Forecast.Solar](https://forecast.solar) à partir de la météo prévue.
 
+Nécessite **Gladys 5.1.0** ou plus récent.
+
+## Maisons
+
+La position vient des **maisons configurées dans Gladys**
+(**Paramètres > Maisons**) : à l'installation, Gladys vous demande
+d'autoriser l'accès à la position des maisons.
+
+- Chaque maison **localisée** apparaît comme un appareil dans l'onglet
+  **Découverte**.
+- Ajoutez **uniquement** les maisons qui ont des panneaux : seules celles-ci
+  sont interrogées (pas de requête perdue).
+- Une maison sans position n'apparaît pas : renseignez sa position dans
+  Gladys, puis relancez une découverte.
+
 ## Ce que vous obtenez
 
-Un appareil **Solar forecast** avec 4 capteurs :
+Pour chaque maison ajoutée, un appareil **Solar forecast** avec 4 capteurs :
 
 | Capteur                          | Unité | Contenu                                       |
 | -------------------------------- | ----- | --------------------------------------------- |
@@ -16,42 +31,85 @@ Un appareil **Solar forecast** avec 4 capteurs :
 | Estimated energy tomorrow        | kWh   | Production estimée pour demain                |
 
 Ce sont des **prévisions**, pas des mesures : elles ne sont pas comptées dans
-le suivi d'énergie de Gladys. Elles servent par exemple à lancer un appareil
-(chauffe-eau, lave-linge…) quand une bonne production est prévue.
+le suivi d'énergie de Gladys.
 
 ## Configuration
 
 1. Ouvrez l'onglet **Configuration** de l'intégration.
-2. Renseignez :
-   - **Latitude / Longitude** : position des panneaux (clic droit sur
-     Google Maps ou OpenStreetMap pour les obtenir) ;
+2. Décrivez vos panneaux :
    - **Inclinaison** : 0° = à plat, 90° = vertical (souvent 30 à 35° sur un toit) ;
    - **Orientation** : 0° = sud, -90° = est, 90° = ouest, 180° = nord ;
    - **Puissance crête** en kWc (indiquée sur votre contrat ou votre onduleur).
 3. La **clé d'API** est facultative : laissez vide pour l'offre gratuite.
-4. Enregistrez, puis ajoutez l'appareil depuis l'onglet **Découverte**.
+4. Enregistrez, puis ajoutez l'appareil de votre maison depuis l'onglet
+   **Découverte**.
+
+Ces réglages s'appliquent à toutes les maisons ajoutées.
 
 Le bouton **Mettre à jour la prévision maintenant** télécharge la prévision
 tout de suite et affiche le résumé du jour et du lendemain.
 
+## Widgets du tableau de bord
+
+| Widget                       | Contenu                                                                    |
+| ---------------------------- | -------------------------------------------------------------------------- |
+| **Prévision solaire**        | Puissance actuelle, énergie du jour / restante / demain, courbe, pic       |
+| **Meilleur créneau solaire** | Meilleur moment pour lancer un appareil de N heures, aujourd'hui et demain |
+
+Dans le widget, choisissez l'appareil (la maison) et, pour le meilleur
+créneau, la durée de l'appareil (lave-linge 2 h, lave-vaisselle 3 h…).
+
+## Scènes
+
+### Déclencheurs
+
+| Déclencheur                    | Quand                                         |
+| ------------------------------ | --------------------------------------------- |
+| Prévision solaire mise à jour  | À chaque nouvelle prévision téléchargée       |
+| Début de la production solaire | Début de production estimée (lever du soleil) |
+| Pic de production solaire      | Pic de production estimé de la journée        |
+| Fin de la production solaire   | Fin de production estimée (coucher du soleil) |
+
+Filtre possible sur la maison (laisser vide = toutes). Variables disponibles
+dans les actions suivantes : maison, puissance actuelle, énergie du jour,
+restante, de demain, puissance et heure du pic.
+
+Pour un **seuil** (« si demain > 10 kWh »), utilisez le déclencheur standard
+de Gladys sur la valeur d'un appareil, avec le capteur
+« Estimated energy tomorrow ».
+
+### Actions
+
+| Action                                   | Paramètres          | Résultats                                                  |
+| ---------------------------------------- | ------------------- | ---------------------------------------------------------- |
+| Lire la prévision solaire                | maison              | puissance, énergies du jour / restante / demain, pic       |
+| Production solaire des prochaines heures | maison, heures      | énergie (kWh), puissance moyenne et maximale (W)           |
+| Trouver le meilleur créneau solaire      | maison, durée, jour | trouvé, heure de début / fin, énergie, minutes avant début |
+
+Exemple : chaque matin à 8 h, « Trouver le meilleur créneau solaire » (2 h,
+aujourd'hui), puis attendre « minutes avant début » et lancer le lave-linge.
+
 ## Fonctionnement
 
 - La prévision est téléchargée toutes les 60 minutes par défaut
-  (réglable de 15 à 1440 minutes).
+  (réglable de 15 à 1440 minutes), par maison ajoutée.
 - Entre deux téléchargements, les valeurs sont recalculées et publiées toutes
   les 5 minutes (la puissance suit la courbe du soleil).
 - L'offre gratuite autorise **12 requêtes par heure** et par adresse IP.
   En cas d'erreur ou de limite atteinte, l'intégration réessaie 15 minutes
   plus tard et garde la dernière prévision connue.
-- Un seul plan de panneaux est géré. Pour une installation est/ouest,
+- Les maisons sont relues à chaque démarrage, à chaque découverte et toutes
+  les heures.
+- Un seul plan de panneaux par maison. Pour une installation est/ouest,
   indiquez l'orientation et la puissance du plan principal.
 
 ## Dépannage
 
-- **« Configuration incomplète ou invalide »** dans l'écran de configuration :
-  un champ obligatoire est vide ou hors limites (le nom du champ est indiqué).
+- **« Configuration incomplète ou invalide »** : un champ obligatoire est
+  vide ou hors limites (le nom du champ est indiqué).
+- **« Aucune maison localisée »** : renseignez la position d'une maison dans
+  **Paramètres > Maisons**.
 - **« Limite de requêtes Forecast.Solar atteinte »** : trop de requêtes depuis
-  votre adresse IP (autre logiciel qui utilise aussi Forecast.Solar ?).
-  Augmentez l'intervalle de mise à jour.
+  votre adresse IP. Augmentez l'intervalle de mise à jour.
 - Pour le détail, consultez les logs de l'intégration depuis Gladys (ou
   `docker logs` sur l'hôte) avec `LOG_LEVEL=debug`.
