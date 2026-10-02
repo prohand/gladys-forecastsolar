@@ -6,7 +6,7 @@ import { ESTIMATE, fakeFetch } from './helpers/fixtures.js';
 
 const realFetch = globalThis.fetch;
 const config = {
-  ...normalizeConfig({ kwp: 3, declination: 30 }),
+  ...normalizeConfig({ wp: 3000, declination: 30 }),
   latitude: 48.8566,
   longitude: 2.3522,
 };

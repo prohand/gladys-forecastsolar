@@ -38,7 +38,7 @@ energy monitoring.
 2. Describe your panels:
    - **Tilt**: 0° = flat, 90° = vertical (often 30 to 35° on a roof);
    - **Orientation**: 0° = south, -90° = east, 90° = west, 180° = north;
-   - **Peak power** in kWp (written on your contract or inverter).
+   - **Peak power** in Wp, whole number (e.g. 3000 for 3 kWp; written on your contract or inverter).
 3. The **API key** is optional: leave it empty for the free plan.
 4. Save, then add the device of your house from the **Discovery** tab.
 
