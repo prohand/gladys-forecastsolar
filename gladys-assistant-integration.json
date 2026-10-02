@@ -1,0 +1,160 @@
+{
+  "manifest_version": 1,
+  "type": "device",
+  "name": "Forecast.Solar",
+  "description": {
+    "en": "Solar production forecast for your PV panels: power now, energy today and tomorrow.",
+    "fr": "Prévision de production solaire : puissance actuelle, énergie du jour et du lendemain."
+  },
+  "version": "1.0.0",
+  "docker_image": "ghcr.io/prohand/gladys-forecastsolar:1.0.0",
+  "gladys_version": ">=4.86.0",
+  "cover_image": "https://raw.githubusercontent.com/prohand/gladys-forecastsolar/main/cover.png",
+  "categories": ["energy"],
+  "config_schema": [
+    {
+      "key": "intro",
+      "type": "section",
+      "label": {
+        "en": "Getting started",
+        "fr": "Pour commencer"
+      },
+      "description": {
+        "en": "Describe your solar installation: location, tilt, orientation and peak power. The free Forecast.Solar plan needs no account (12 requests per hour). An API key is only needed for a paid plan.",
+        "fr": "Décrivez votre installation solaire : position, inclinaison, orientation et puissance crête. L'offre gratuite de Forecast.Solar ne demande aucun compte (12 requêtes par heure). La clé d'API ne sert que pour une offre payante."
+      },
+      "links": [
+        {
+          "url": "https://forecast.solar",
+          "label": {
+            "en": "Forecast.Solar website",
+            "fr": "Site de Forecast.Solar"
+          }
+        },
+        {
+          "url": "https://doc.forecast.solar/api:estimate",
+          "label": {
+            "en": "API documentation",
+            "fr": "Documentation de l'API"
+          }
+        }
+      ]
+    },
+    {
+      "key": "latitude",
+      "type": "number",
+      "label": {
+        "en": "Latitude",
+        "fr": "Latitude"
+      },
+      "description": {
+        "en": "Latitude of the solar panels, e.g. 48.8566.",
+        "fr": "Latitude des panneaux solaires, par exemple 48.8566."
+      },
+      "required": true,
+      "min": -90,
+      "max": 90
+    },
+    {
+      "key": "longitude",
+      "type": "number",
+      "label": {
+        "en": "Longitude",
+        "fr": "Longitude"
+      },
+      "description": {
+        "en": "Longitude of the solar panels, e.g. 2.3522.",
+        "fr": "Longitude des panneaux solaires, par exemple 2.3522."
+      },
+      "required": true,
+      "min": -180,
+      "max": 180
+    },
+    {
+      "key": "declination",
+      "type": "number",
+      "label": {
+        "en": "Tilt (°)",
+        "fr": "Inclinaison (°)"
+      },
+      "description": {
+        "en": "Angle of the panels: 0 = flat, 90 = vertical.",
+        "fr": "Angle des panneaux : 0 = à plat, 90 = vertical."
+      },
+      "required": true,
+      "default": 35,
+      "min": 0,
+      "max": 90
+    },
+    {
+      "key": "azimuth",
+      "type": "number",
+      "label": {
+        "en": "Orientation (°)",
+        "fr": "Orientation (°)"
+      },
+      "description": {
+        "en": "Direction the panels face: 0 = south, -90 = east, 90 = west, 180 = north.",
+        "fr": "Direction des panneaux : 0 = sud, -90 = est, 90 = ouest, 180 = nord."
+      },
+      "required": true,
+      "default": 0,
+      "min": -180,
+      "max": 180
+    },
+    {
+      "key": "kwp",
+      "type": "number",
+      "label": {
+        "en": "Peak power (kWp)",
+        "fr": "Puissance crête (kWc)"
+      },
+      "description": {
+        "en": "Installed peak power of the panels, in kilowatt-peak, e.g. 3.",
+        "fr": "Puissance crête installée des panneaux, en kilowatt-crête, par exemple 3."
+      },
+      "required": true,
+      "min": 0.01,
+      "max": 10000
+    },
+    {
+      "key": "api_key",
+      "type": "secret",
+      "label": {
+        "en": "API key (optional)",
+        "fr": "Clé d'API (facultative)"
+      },
+      "description": {
+        "en": "Leave empty for the free plan.",
+        "fr": "Laissez vide pour l'offre gratuite."
+      },
+      "required": false
+    },
+    {
+      "key": "refresh_interval",
+      "type": "number",
+      "label": {
+        "en": "Forecast refresh interval (min)",
+        "fr": "Intervalle de mise à jour de la prévision (min)"
+      },
+      "description": {
+        "en": "How often the forecast is downloaded again. The values shown in Gladys are still updated every 5 minutes.",
+        "fr": "Fréquence de téléchargement de la prévision. Les valeurs affichées dans Gladys restent mises à jour toutes les 5 minutes."
+      },
+      "required": false,
+      "default": 60,
+      "min": 15,
+      "max": 1440
+    }
+  ],
+  "actions": [
+    {
+      "key": "test_forecast",
+      "label": {
+        "en": "Refresh the forecast now",
+        "fr": "Mettre à jour la prévision maintenant"
+      },
+      "timeout_seconds": 30
+    }
+  ]
+}
