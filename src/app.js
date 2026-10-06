@@ -37,6 +37,9 @@ const logger = createLogger({ name: 'forecast-solar' });
 export const PUBLISH_INTERVAL_MS = 5 * 60 * 1000;
 export const ERROR_RETRY_MS = 15 * 60 * 1000;
 export const HOUSES_RELOAD_MS = 60 * 60 * 1000;
+// Two paths poll a device — the core's scheduler and the app's own loop
+// (pollCreated) — and this gap keeps them to one evaluation a minute.
+export const MIN_POLL_GAP_MS = 50 * 1000;
 
 const clamp = (value, min, max, fallback) => {
   const number = Number(value);
@@ -71,6 +74,8 @@ export function createApp(
   // Per house: { planeKey, forecast, fetchedAt, lastAttemptAt, lastPublishedAt,
   //              lastEvaluatedAt, error, pending }
   const caches = new Map();
+  // Last poll of each device external_id (ms).
+  const lastPollAt = new Map();
 
   // --- Houses -----------------------------------------------------------------
 
@@ -276,11 +281,16 @@ export function createApp(
 
   // --- Handlers -----------------------------------------------------------------
 
-  async function poll(device) {
+  async function poll(device, { force = false } = {}) {
     if (configErrorMessage(config)) {
       logger.debug('Poll ignored: configuration incomplete');
       return;
     }
+    const last = lastPollAt.get(device.external_id);
+    if (!force && last !== undefined && now() - last < MIN_POLL_GAP_MS) {
+      return;
+    }
+    lastPollAt.set(device.external_id, now());
     await reloadHousesIfOld();
     const house = houseOfDevice(device.external_id);
     if (!house) {
@@ -322,7 +332,7 @@ export function createApp(
     await loadHouses();
     await gladys.publishDiscoveredDevices(houses.map((house) => buildDevice(gladys, house)));
     for (const house of await createdHouses()) {
-      await poll({ external_id: deviceIds(gladys, house).device });
+      await poll({ external_id: deviceIds(gladys, house).device }, { force: true });
     }
     await reportStatus({ force: true });
   }
@@ -338,11 +348,36 @@ export function createApp(
 
     setConfig(raw) {
       config = normalizeConfig(raw);
+      // A new configuration is evaluated at once, not a minute later.
+      lastPollAt.clear();
     },
 
     loadHouses,
     synchronize,
     poll,
+
+    /**
+     * One tick of the app's own refresh loop (index.js, every minute): poll
+     * every device the user created. Gladys only schedules the devices whose
+     * row carries `should_poll: true`, read once at creation, so the ones
+     * created before that flag was published would otherwise never refresh.
+     * Shares `lastPollAt` with poll(), so a device Gladys also polls is still
+     * evaluated once a minute.
+     */
+    async pollCreated() {
+      const created = new Set((gladys.devices ?? []).map((device) => device.external_id));
+      for (const house of houses) {
+        const externalId = deviceIds(gladys, house).device;
+        if (!created.has(externalId)) {
+          continue;
+        }
+        try {
+          await poll({ external_id: externalId });
+        } catch (err) {
+          logger.error(`Refresh of ${house.name} failed:`, err.message);
+        }
+      }
+    },
 
     /** Discovery: one device per located house. */
     async discoveredDevices() {
@@ -353,7 +388,7 @@ export function createApp(
     /** The user just added a device: publish its values right away. */
     async onDeviceCreated(device) {
       if (houseOfDevice(device.external_id)) {
-        await poll(device);
+        await poll(device, { force: true });
       }
     },
 

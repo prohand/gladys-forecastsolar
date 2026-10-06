@@ -20,6 +20,26 @@ import { createApp } from './src/app.js';
 const gladys = new GladysIntegration();
 const app = createApp(gladys);
 
+// The app's own refresh loop: Gladys only polls the devices created with
+// `should_poll: true`, so an older device would otherwise stay frozen.
+const REFRESH_LOOP_MS = 60 * 1000;
+let refreshTimer = null;
+function startRefreshLoop() {
+  if (refreshTimer) {
+    return;
+  }
+  refreshTimer = setInterval(() => {
+    app.pollCreated().catch((err) => logger.error('Scheduled refresh failed', err));
+  }, REFRESH_LOOP_MS);
+  refreshTimer.unref?.();
+}
+function stopRefreshLoop() {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+}
+
 // --- Discovery: one device per located house ---------------------------------
 gladys.onScanRequest(async () => {
   logger.info('onScanRequest -> publishing discovered devices');
@@ -59,6 +79,9 @@ gladys.onConfigUpdated(async (newConfig) => {
 // Houses have no update event: they are re-read on every (re)connection, on
 // every scan, and every hour.
 gladys.on('connected', async () => {
+  // Armed first: a failed synchronization (network not up yet) must not leave
+  // the devices without a refresh.
+  startRefreshLoop();
   try {
     app.setConfig(await gladys.getConfig());
     await app.synchronize();
@@ -76,6 +99,7 @@ gladys.on('connected', async () => {
 // --- Graceful shutdown -------------------------------------------------------
 gladys.handleShutdown((signal) => {
   logger.info(`Received ${signal} -> graceful shutdown`);
+  stopRefreshLoop();
 });
 
 // --- Startup -----------------------------------------------------------------

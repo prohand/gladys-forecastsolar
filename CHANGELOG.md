@@ -17,6 +17,11 @@ All notable changes to this integration are documented here. The format follows
 - Development dependencies updated to their latest versions (ESLint 10.12, Prettier 3.9.9, globals 17.13).
 - Manifest re-formatted with Prettier, so the CI format check passes again.
 
+### Fixed
+
+- The forecast, its values and the production scene triggers are refreshed again after the device is created: devices are published with `should_poll: true`, without which Gladys never polls them, and an integration-owned loop refreshes the devices created before that flag.
+- The Release workflow re-runs Prettier on the manifest after `jq`, so a release no longer leaves `main` with a failing CI format check.
+
 ## [1.0.1] - 2026-10-02
 
 First public release.

@@ -54,8 +54,10 @@ src/widgets.js               widgets solar_forecast and solar_best_window (pure)
 - **Location is personal data**: `"location": true` in the manifest is what allows
   `gladys.getHouses()` (403 without it). Coordinates are never logged nor published.
 - **Polling**: devices declare `poll_frequency: 60000` (the slowest value Gladys accepts; any
-  other value rejects the whole discovery). Gladys only polls a device that also has
-  `should_poll: true` (default `false` in the core).
+  other value rejects the whole discovery) and `should_poll: true` (default `false` in the core,
+  read once at creation). `app.pollCreated()`, run every minute by index.js, covers the devices
+  created before that flag; both paths share `lastPollAt` (`MIN_POLL_GAP_MS`), so a device is
+  evaluated once a minute.
 - **Scene events only come from `poll()`**, never from a scene action (a scene bound to the
   event would loop). Production start/peak/end are computed between two polls
   (`dueProductionEvents`); the first poll only records the time.

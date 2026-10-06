@@ -39,6 +39,8 @@ test('one device is discovered per located house', async () => {
   assert.equal(devices[0].name, 'Solar forecast (Home)');
   assert.ok(GLADYS_POLL_FREQUENCIES.includes(devices[0].poll_frequency));
   assert.equal(devices[0].poll_frequency, POLL_FREQUENCY_MS);
+  // Without should_poll the core never schedules the device.
+  assert.equal(devices[0].should_poll, true);
   assert.equal(devices[0].features.length, 4);
 });
 
@@ -135,7 +137,7 @@ test('a failed download is reported and retried later, not every minute', async 
 });
 
 test('changing the panels or the house location downloads again', async () => {
-  const { app, gladys, calls, device } = setup();
+  const { app, gladys, calls, clock, device } = setup();
   await app.loadHouses();
   await app.poll(device);
   app.setConfig({ wp: 6000, declination: 30 });
@@ -143,6 +145,7 @@ test('changing the panels or the house location downloads again', async () => {
   assert.equal(calls.length, 2);
   gladys.houses = [{ ...HOUSES[0], latitude: 45.75, longitude: 4.85 }];
   await app.loadHouses();
+  clock.now += MINUTE;
   await app.poll(device);
   assert.equal(calls.length, 3);
   assert.equal(calls[2].latitude, 45.75);
@@ -231,4 +234,17 @@ test('concurrent requests share one download', async () => {
     app.widgets[WIDGETS.SOLAR_FORECAST]({ settings: { device: device.external_id } }),
   ]);
   assert.equal(calls.length, 1);
+});
+
+test('two polls in the same minute evaluate once (core poll + own loop)', async () => {
+  const gladysDevice = { external_id: 'ext:forecast-solar:solar-forecast:house-1' };
+  const { app, gladys, clock } = setup({ createdDevices: [gladysDevice] });
+  await app.loadHouses();
+  await app.pollCreated();
+  const published = gladys.published.length;
+  assert.ok(published > 0, 'the own loop refreshes a created device');
+  clock.now += 10 * 1000;
+  await app.poll(gladysDevice);
+  assert.equal(gladys.published.length, published);
+  assert.equal(gladys.sceneEvents.length, 1, 'forecast_updated fired once');
 });
