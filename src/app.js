@@ -28,6 +28,7 @@ import {
   WIDGETS,
   bestWindowContent,
   emptyContent,
+  loadingContent,
   NOT_READY_MESSAGE,
   solarForecastContent,
 } from './widgets.js';
@@ -40,6 +41,10 @@ export const HOUSES_RELOAD_MS = 60 * 60 * 1000;
 // Two paths poll a device — the core's scheduler and the app's own loop
 // (pollCreated) — and this gap keeps them to one evaluation a minute.
 export const MIN_POLL_GAP_MS = 50 * 1000;
+// The core waits 15 s for a widget, then shows "data unavailable" and never
+// retries until the dashboard is reloaded; one Forecast.Solar request is allowed
+// 15 s on its own. Past this deadline the card says it is loading.
+export const PULL_DEADLINE_MS = 9000;
 
 const clamp = (value, min, max, fallback) => {
   const number = Number(value);
@@ -174,6 +179,7 @@ export function createApp(
         lastAttemptAt: 0,
         lastPublishedAt: 0,
         lastEvaluatedAt: 0,
+        firedEvents: new Set(),
         error: null,
         pending: null,
       };
@@ -244,6 +250,34 @@ export function createApp(
   }
 
   /** Forecast of the house of a device chosen in a scene or a widget. */
+  /**
+   * The forecast a widget shows: the one in memory whenever there is one (the
+   * polls keep it fresh), a download only for a house that has none yet, and
+   * never longer than the deadline — `null` then, the download going on.
+   */
+  async function forecastForWidget(externalId, deadlineMs) {
+    if (configErrorMessage(config)) {
+      throw new Error(configErrorMessage(config).en);
+    }
+    await reloadHousesIfOld();
+    const house = houseOfDevice(externalId);
+    if (!house) {
+      throw new Error(UNKNOWN_DEVICE_MESSAGE.en);
+    }
+    const entry = entryOf(house);
+    if (entry.forecast) {
+      return { house, entry };
+    }
+    const download = forecastForDevice(externalId);
+    download.catch(() => {});
+    let timer;
+    const late = new Promise((resolve) => {
+      timer = setTimeout(() => resolve(null), deadlineMs);
+      timer.unref?.();
+    });
+    return Promise.race([download, late]).finally(() => clearTimeout(timer));
+  }
+
   async function forecastForDevice(externalId) {
     if (configErrorMessage(config)) {
       throw new Error(configErrorMessage(config).en);
@@ -319,6 +353,7 @@ export function createApp(
         house.name,
         entry.lastEvaluatedAt,
         time,
+        entry.firedEvents,
       );
       for (const event of events) {
         await fireSceneEvent(event.key, event.data);
@@ -461,9 +496,13 @@ export function createApp(
 
     // Dashboard widgets (manifest `widgets`).
     widgets: {
-      async [WIDGETS.SOLAR_FORECAST]({ settings = {} }) {
+      async [WIDGETS.SOLAR_FORECAST]({ settings = {} }, { deadlineMs = PULL_DEADLINE_MS } = {}) {
         try {
-          const { house, entry } = await forecastForDevice(settings.device);
+          const found = await forecastForWidget(settings.device, deadlineMs);
+          if (!found) {
+            return loadingContent();
+          }
+          const { house, entry } = found;
           return solarForecastContent({
             forecast: entry.forecast,
             ids: deviceIds(gladys, house),
@@ -477,9 +516,13 @@ export function createApp(
         }
       },
 
-      async [WIDGETS.BEST_WINDOW]({ settings = {} }) {
+      async [WIDGETS.BEST_WINDOW]({ settings = {} }, { deadlineMs = PULL_DEADLINE_MS } = {}) {
         try {
-          const { house, entry } = await forecastForDevice(settings.device);
+          const found = await forecastForWidget(settings.device, deadlineMs);
+          if (!found) {
+            return loadingContent();
+          }
+          const { house, entry } = found;
           return bestWindowContent({
             forecast: entry.forecast,
             houseName: house.name,

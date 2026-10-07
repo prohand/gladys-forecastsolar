@@ -46,6 +46,33 @@ test('production events fire once, when their moment is crossed', () => {
   assert.deepEqual(dueProductionEvents(FORECAST, DEVICE, 'Home', after, after + 60000), []);
 });
 
+test('a new download moving the peak later does not fire it a second time', () => {
+  const fired = new Set();
+  const first = dueProductionEvents(
+    FORECAST,
+    DEVICE,
+    'Home',
+    at('2026-10-02T15:59:00+02:00'),
+    at('2026-10-02T16:00:00+02:00'),
+    fired,
+  );
+  assert.deepEqual(
+    first.map((e) => e.key),
+    [SCENE_TRIGGERS.PRODUCTION_PEAK],
+  );
+  // The hourly download now puts the peak at 17:00.
+  const moved = { ...FORECAST, watts: { ...FORECAST.watts, '2026-10-02T17:00:00+02:00': 800 } };
+  const again = dueProductionEvents(
+    moved,
+    DEVICE,
+    'Home',
+    at('2026-10-02T16:59:00+02:00'),
+    at('2026-10-02T17:00:00+02:00'),
+    fired,
+  );
+  assert.deepEqual(again, []);
+});
+
 test('start and end events follow sunrise and sunset', () => {
   const start = dueProductionEvents(
     FORECAST,
