@@ -174,6 +174,7 @@ export function createApp(
         lastAttemptAt: 0,
         lastPublishedAt: 0,
         lastEvaluatedAt: 0,
+        firedEvents: new Set(),
         error: null,
         pending: null,
       };
@@ -319,6 +320,7 @@ export function createApp(
         house.name,
         entry.lastEvaluatedAt,
         time,
+        entry.firedEvents,
       );
       for (const event of events) {
         await fireSceneEvent(event.key, event.data);

@@ -64,13 +64,28 @@ export function forecastUpdatedEvent(forecast, deviceExternalId, houseName, now)
 /**
  * Production events whose moment is in (from, to]: start, peak and end of
  * the estimated production of each day of the forecast.
+ * @param {Set<string>} [fired] - `day|key` already fired, kept by the caller
+ *   across polls and updated here.
  * @returns {Array<{ key: string, time: number, data: object }>}
  */
-export function dueProductionEvents(forecast, deviceExternalId, houseName, from, to) {
+export function dueProductionEvents(
+  forecast,
+  deviceExternalId,
+  houseName,
+  from,
+  to,
+  fired = new Set(),
+) {
   if (to - from <= 0) {
     return [];
   }
   const days = [...new Set(Object.keys(forecast.wattHoursDay ?? {}))];
+  // Only the days still in the forecast are worth remembering.
+  for (const key of fired) {
+    if (!days.includes(key.split('|')[0])) {
+      fired.delete(key);
+    }
+  }
   const events = [];
   for (const day of days) {
     const profile = dayProfile(forecast, day);
@@ -83,7 +98,12 @@ export function dueProductionEvents(forecast, deviceExternalId, houseName, from,
       [SCENE_TRIGGERS.PRODUCTION_ENDED, profile.end],
     ];
     for (const [key, time] of moments) {
-      if (time > from && time <= to && to - time <= MAX_EVENT_DELAY_MS) {
+      // Once per day and kind: a new download (hourly) can move the peak or the
+      // start a quarter of an hour later, after it already fired, and the same
+      // moment would then fire a second time.
+      const firedKey = `${day}|${key}`;
+      if (time > from && time <= to && to - time <= MAX_EVENT_DELAY_MS && !fired.has(firedKey)) {
+        fired.add(firedKey);
         events.push({
           key,
           time,
