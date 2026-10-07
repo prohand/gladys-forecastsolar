@@ -225,6 +225,31 @@ test('widgets return a content, or a waiting message', async () => {
   assert.equal(empty.components[0].type, 'text');
 });
 
+test('a widget never waits past the deadline, nor downloads when it has a forecast', async () => {
+  const gladys = createFakeGladys({});
+  let release;
+  let downloads = 0;
+  const app = createApp(gladys, {
+    now: () => at('2026-10-02T15:00:00+02:00'),
+    fetchForecastImpl: () => {
+      downloads += 1;
+      return new Promise((resolve) => (release = () => resolve(FORECAST)));
+    },
+  });
+  app.setConfig({ wp: 3000, declination: 30 });
+  await app.loadHouses();
+  const settings = { device: deviceIds(gladys, HOUSES[0]).device };
+
+  const loading = await app.widgets[WIDGETS.SOLAR_FORECAST]({ settings }, { deadlineMs: 10 });
+  assert.equal(loading.ttl_seconds, 15, 'a loading card, re-pulled shortly');
+  release();
+  await new Promise((resolve) => setImmediate(resolve));
+
+  const content = await app.widgets[WIDGETS.SOLAR_FORECAST]({ settings }, { deadlineMs: 10 });
+  assert.ok(content.components.some((c) => c.type === 'chart'));
+  assert.equal(downloads, 1, 'the download the first pull started is the one used');
+});
+
 test('concurrent requests share one download', async () => {
   const { app, calls, device } = setup();
   await app.loadHouses();

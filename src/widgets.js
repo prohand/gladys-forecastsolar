@@ -28,6 +28,23 @@ export function emptyContent(message) {
   };
 }
 
+/** The card served while a first download finishes, re-pulled 15 s later. */
+export function loadingContent() {
+  return {
+    ttl_seconds: 15,
+    components: [
+      {
+        type: 'text',
+        variant: 'body',
+        text: {
+          en: 'Downloading the forecast, this takes longer than usual…',
+          fr: 'Téléchargement de la prévision, plus long que d’habitude…',
+        },
+      },
+    ],
+  };
+}
+
 export const NOT_READY_MESSAGE = {
   en: 'No forecast yet. Add the device from the Discovery tab and wait a minute.',
   fr: "Pas encore de prévision. Ajoutez l'appareil depuis l'onglet Découverte et patientez une minute.",
