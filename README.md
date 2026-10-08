@@ -38,9 +38,12 @@ Requires **Gladys 5.1.0+** (dashboard widgets and scene declarations).
 
 Rhythms (free plan: 12 requests/hour/IP): the forecast of a house is
 downloaded every `refresh_interval` minutes (default 60, 15 min after an
-error) and kept in memory; Gladys polls every minute, values are recomputed
-from the cache (linear interpolation, exact trapezoid integral for energies)
-and published every 5 minutes; production events are checked on every poll.
+error, stretched so all created houses together stay under 10 requests/hour,
+and after a 429 not before the `retry-at` Forecast.Solar gives) and kept in
+memory; Gladys polls every minute, values are recomputed from the cache
+(linear interpolation, exact trapezoid integral for energies) every 5 minutes
+and published when they changed, or every 30 minutes; production events are
+checked on every poll.
 
 ## Project structure
 

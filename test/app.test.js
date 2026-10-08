@@ -1,6 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createApp, ERROR_RETRY_MS, PUBLISH_INTERVAL_MS } from '../src/app.js';
+import {
+  createApp,
+  ERROR_RETRY_MS,
+  FORCED_REUSE_MS,
+  HOUSES_RETRY_MS,
+  PUBLISH_INTERVAL_MS,
+  STATE_HEARTBEAT_MS,
+} from '../src/app.js';
 import { deviceIds, POLL_FREQUENCY_MS } from '../src/devices/solarForecast.js';
 import { ForecastSolarError } from '../src/forecastSolar.js';
 import { WIDGETS } from '../src/widgets.js';
@@ -87,7 +94,12 @@ test('the forecast is downloaded once per refresh interval, values every 5 min',
     await app.poll(device);
   }
   assert.equal(calls.length, 1, 'one download for 60 polls');
-  assert.equal(gladys.published.length, ((60 * MINUTE) / PUBLISH_INTERVAL_MS) * 4);
+  // Values are recomputed every 5 min, but only what moved is published, plus
+  // a heartbeat: today's total (constant) goes out at 0 and 30 min only.
+  const todayStates = gladys.published.filter((p) => p.featureExternalId.endsWith(':energy-today'));
+  assert.equal(todayStates.length, (60 * MINUTE) / STATE_HEARTBEAT_MS);
+  const powerStates = gladys.published.filter((p) => p.featureExternalId.endsWith(':power-now'));
+  assert.equal(powerStates.length, (60 * MINUTE) / PUBLISH_INTERVAL_MS, 'the power moves');
 
   clock.now = start + 60 * MINUTE;
   await app.poll(device);
@@ -272,4 +284,155 @@ test('two polls in the same minute evaluate once (core poll + own loop)', async 
   await app.poll(gladysDevice);
   assert.equal(gladys.published.length, published);
   assert.equal(gladys.sceneEvents.length, 1, 'forecast_updated fired once');
+});
+
+/** `count` located houses, all of them created in Gladys. */
+function manyHouses(count) {
+  const houses = Array.from({ length: count }, (_, i) => ({
+    id: `house-${i + 1}`,
+    name: `House ${i + 1}`,
+    selector: `house-${i + 1}`,
+    latitude: 48 + i,
+    longitude: 2 + i,
+  }));
+  const createdDevices = houses.map((house) => ({
+    external_id: `ext:forecast-solar:solar-forecast:${house.id}`,
+  }));
+  return { houses, createdDevices };
+}
+
+test('several houses stretch the interval to stay under the hourly quota', async () => {
+  const { houses, createdDevices } = manyHouses(4);
+  const { app, calls, clock } = setup({ houses, createdDevices });
+  app.setConfig({ wp: 3000, declination: 30, refresh_interval: 15 });
+  await app.loadHouses();
+  const start = clock.now;
+  const times = [];
+  for (let minute = 0; minute < 180; minute += 1) {
+    clock.now = start + minute * MINUTE;
+    const before = calls.length;
+    await app.pollCreated();
+    times.push(...Array(calls.length - before).fill(minute));
+  }
+  // 4 houses every 15 min would be 16 requests/hour: every 30 min instead.
+  assert.equal(calls.length, 4 * 6, 'downloads at 0, 30, 60, 90, 120 and 150 min');
+  for (const from of times) {
+    const inOneHour = times.filter((t) => t >= from && t < from + 60).length;
+    assert.ok(inOneHour <= 10, `${inOneHour} requests in the hour from minute ${from}`);
+  }
+
+  // One house alone keeps the configured interval.
+  const single = setup({ createdDevices: [createdDevices[0]] });
+  single.app.setConfig({ wp: 3000, declination: 30, refresh_interval: 15 });
+  await single.app.loadHouses();
+  for (let minute = 0; minute < 60; minute += 1) {
+    single.clock.now = start + minute * MINUTE;
+    await single.app.poll(single.device);
+  }
+  assert.equal(single.calls.length, 4);
+});
+
+test('a 429 waits until the retry-at Forecast.Solar gives, for every house', async () => {
+  const { houses, createdDevices } = manyHouses(2);
+  const gladys = createFakeGladys({ houses, createdDevices });
+  const clock = { now: at('2026-10-02T15:00:00+02:00') };
+  const calls = [];
+  const app = createApp(gladys, {
+    now: () => clock.now,
+    fetchForecastImpl: async (plane) => {
+      calls.push(plane);
+      throw new ForecastSolarError('Forecast.Solar: HTTP 429', {
+        status: 429,
+        retryAt: clock.now + 40 * MINUTE,
+      });
+    },
+  });
+  app.setConfig({ wp: 3000, declination: 30 });
+  await app.loadHouses();
+  await app.pollCreated();
+  assert.equal(calls.length, 1, 'the second house does not try once the quota is reached');
+
+  clock.now += ERROR_RETRY_MS + MINUTE;
+  await app.pollCreated();
+  assert.equal(calls.length, 1, 'no retry before retry-at');
+
+  clock.now += 40 * MINUTE;
+  await app.pollCreated();
+  assert.equal(calls.length, 2, 'retried once retry-at has passed');
+  await assert.rejects(() => app.actions.test_forecast(), /request limit/);
+  assert.equal(calls.length, 2, 'the Test button does not call while rate limited');
+});
+
+test('the Test button reuses a download of the last 5 minutes', async () => {
+  const { app, calls, clock } = setup();
+  await app.actions.test_forecast();
+  clock.now += MINUTE;
+  await app.actions.test_forecast();
+  assert.equal(calls.length, 1);
+  clock.now += FORCED_REUSE_MS;
+  await app.actions.test_forecast();
+  assert.equal(calls.length, 2);
+});
+
+test('a download made by a scene action is announced by the next poll, once', async () => {
+  const { app, gladys, calls, clock, device } = setup();
+  await app.loadHouses();
+  await app.sceneActions.get_forecast({ device: device.external_id });
+  assert.equal(calls.length, 1);
+  assert.equal(gladys.sceneEvents.length, 0, 'never from the scene action itself');
+
+  clock.now += MINUTE;
+  await app.poll(device);
+  assert.deepEqual(
+    gladys.sceneEvents.map((e) => e.key),
+    [SCENE_TRIGGERS.FORECAST_UPDATED],
+  );
+  clock.now += MINUTE;
+  await app.poll(device);
+  assert.equal(gladys.sceneEvents.length, 1, 'announced once');
+  assert.equal(calls.length, 1, 'the poll reused that download');
+});
+
+test('a failed read of the houses is retried within minutes, not an hour', async () => {
+  const { app, gladys, calls, clock, device } = setup();
+  const getHouses = gladys.getHouses;
+  gladys.getHouses = async () => {
+    throw new Error('Gladys restarting');
+  };
+  await app.loadHouses();
+  assert.equal(app.houses.length, 0);
+  gladys.getHouses = getHouses;
+
+  clock.now += HOUSES_RETRY_MS;
+  await app.poll(device);
+  assert.equal(app.houses.length, 1);
+  assert.equal(calls.length, 1, 'the device is refreshed as soon as the houses are back');
+});
+
+test('unchanged values wait for the heartbeat; a created device gets them all', async () => {
+  const { app, gladys, clock, device } = setup();
+  await app.loadHouses();
+  clock.now = at('2026-10-02T22:00:00+02:00'); // night: nothing moves
+  await app.poll(device);
+  assert.equal(gladys.published.length, 4);
+
+  clock.now += PUBLISH_INTERVAL_MS;
+  await app.poll(device);
+  assert.equal(gladys.published.length, 4, 'nothing changed, nothing published');
+
+  await app.onDeviceCreated(device);
+  assert.equal(gladys.published.length, 8, 'a new device is sent every value');
+
+  clock.now += MINUTE;
+  await app.onDeviceUpdated(device);
+  assert.equal(gladys.published.length, 12, 'an updated device too');
+
+  app.forgetPublishedStates();
+  clock.now += MINUTE;
+  await app.poll(device, { force: true });
+  assert.equal(gladys.published.length, 16, 'and everything after a reconnection');
+
+  clock.now += STATE_HEARTBEAT_MS;
+  await app.poll(device);
+  assert.equal(gladys.published.length, 20, 'the heartbeat re-sends stable values');
 });

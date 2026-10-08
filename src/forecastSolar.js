@@ -9,7 +9,7 @@
 // Free plan limit: 12 requests per hour and per IP address. The caller keeps
 // the result in cache and only calls this module every `refresh_interval`.
 //
-// Node 20+ provides `fetch` natively: no dependency needed.
+// Node 22+ provides `fetch` natively: no dependency needed.
 // -----------------------------------------------------------------------------
 
 import { createLogger } from '@gladysassistant/integration-sdk';
@@ -20,10 +20,16 @@ const API_BASE_URL = 'https://api.forecast.solar';
 
 /** Error returned by Forecast.Solar (bad parameters, rate limit, outage…). */
 export class ForecastSolarError extends Error {
-  constructor(message, { status } = {}) {
+  /**
+   * @param {string} message
+   * @param {{ status?: number, retryAt?: number | null }} [details] `retryAt`
+   *   (ms) is when Forecast.Solar accepts requests again, on a 429.
+   */
+  constructor(message, { status, retryAt = null } = {}) {
     super(message);
     this.name = 'ForecastSolarError';
     this.status = status;
+    this.retryAt = retryAt;
   }
 
   get isRateLimited() {
@@ -43,6 +49,41 @@ export function buildEstimateUrl({ latitude, longitude, declination, azimuth, kw
 }
 
 /**
+ * The estimate URL as it may be written to the logs: the API key AND the
+ * coordinates of the house masked. The URL carries the house position in its
+ * path, and the docs ask users to share debug logs when something fails —
+ * where somebody lives must not travel with them.
+ */
+export function redactedEstimateUrl(config) {
+  return buildEstimateUrl({
+    ...config,
+    latitude: '***',
+    longitude: '***',
+    api_key: config.api_key ? '***' : '',
+  });
+}
+
+/**
+ * When Forecast.Solar accepts requests again (ms), read from a 429 answer:
+ * `message.ratelimit["retry-at"]` in the body, or the `X-Ratelimit-Retry-At`
+ * header. Null when neither is readable: the caller then falls back on its
+ * own retry delay.
+ */
+export function readRetryAt(body, headers) {
+  const candidates = [
+    body?.message?.ratelimit?.['retry-at'],
+    typeof headers?.get === 'function' ? headers.get('x-ratelimit-retry-at') : undefined,
+  ];
+  for (const candidate of candidates) {
+    const time = candidate ? new Date(candidate).getTime() : NaN;
+    if (Number.isFinite(time)) {
+      return time;
+    }
+  }
+  return null;
+}
+
+/**
  * Download the forecast of the configured plane.
  * @returns {Promise<{
  *   watts: Record<string, number>,
@@ -54,9 +95,8 @@ export function buildEstimateUrl({ latitude, longitude, declination, azimuth, kw
  */
 export async function fetchForecast(config) {
   const url = buildEstimateUrl(config);
-  // Never log the API key.
-  const loggedUrl = config.api_key ? url.replace(/[^/]+\/estimate\//, '***/estimate/') : url;
-  logger.debug('Forecast.Solar request ->', loggedUrl);
+  // Never log the API key nor the house coordinates.
+  logger.debug('Forecast.Solar request ->', redactedEstimateUrl(config));
 
   const response = await fetch(url, {
     headers: { Accept: 'application/json' },
@@ -73,7 +113,10 @@ export async function fetchForecast(config) {
   const message = body?.message ?? {};
   if (!response.ok || message.type === 'error') {
     const text = message.text || `HTTP ${response.status}`;
-    throw new ForecastSolarError(`Forecast.Solar: ${text}`, { status: response.status });
+    throw new ForecastSolarError(`Forecast.Solar: ${text}`, {
+      status: response.status,
+      retryAt: response.status === 429 ? readRetryAt(body, response.headers) : null,
+    });
   }
 
   const result = body?.result;

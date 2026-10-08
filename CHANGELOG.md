@@ -6,9 +6,36 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Security
+
+- The house coordinates are masked (`***`) in the Forecast.Solar request URL written to the debug logs, like the API key already was.
+
+### Fixed
+
+- Several houses no longer exhaust the Forecast.Solar quota (12 requests/hour/IP): the download interval is lengthened automatically to stay under 10 requests/hour for all houses together; the configured interval remains the minimum.
+- After a "request limit reached" answer, the integration waits until the time Forecast.Solar gives (for every house) instead of retrying 15 minutes later.
+- The **Refresh the forecast now** button reuses a forecast downloaded less than 5 minutes ago, and sends no request while the limit is reached.
+- A forecast downloaded by a scene action, a widget or the "Refresh the forecast now" button now fires the "Solar forecast updated" trigger (on the next refresh).
+- A failed read of the Gladys houses is retried after a minute instead of an hour.
+- The estimated power is no longer published as 0 W up to 24 hours after the end of the forecast: past its last point (plus one hour) it is unknown.
+- After a disconnection the refresh loop pauses, and an updated device gets all its values again, like a created one.
+
+### Changed
+
+- Values are published when they change, or every 30 minutes, instead of every 5 minutes: a much smaller history in Gladys.
+- Node.js 22 or later is required (the Docker image ships Node 24).
+- CI tests on Node 22 and 24 and builds the Docker image on pull requests; Dependabot also follows the Docker base image.
+
 ## [1.2.0] - 2026-10-07
 
-- Maintenance release, no functional change.
+### Fixed
+
+- A widget answers before Gladys gives up on it: it shows the forecast in memory, downloads only for a house that has none yet, and shows a loading card past 9 s.
+- Each production moment (start, peak, end) fires its scene trigger once a day, even when a new forecast moves it a little.
+
+### Changed
+
+- CI runs the store admission checks on pull requests; Dependabot keeps the dependencies and GitHub Actions up to date; a GitHub Release is published for every version.
 
 ## [1.1.0] - 2026-10-06
 
