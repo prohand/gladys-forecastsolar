@@ -343,9 +343,11 @@ export function createApp(
     const download = forecastForDevice(externalId);
     download.catch(() => {});
     let timer;
+    // Not unref'd: while the download waits on a socket that keeps no handle of its own (a
+    // stubbed fetch in the tests), this timer is the only thing left to wake the pull up, and an
+    // unref'd one let the process end with the promise pending. It is cleared below anyway.
     const late = new Promise((resolve) => {
       timer = setTimeout(() => resolve(null), deadlineMs);
-      timer.unref?.();
     });
     return Promise.race([download, late]).finally(() => clearTimeout(timer));
   }
