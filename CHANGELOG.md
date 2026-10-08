@@ -6,6 +6,10 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-10-08
+
+- Maintenance release, no functional change.
+
 ## [1.2.1] - 2026-10-08
 
 ### Security
@@ -70,7 +74,8 @@ First public release.
 
 - Peak power typed in Wp so the Gladys form accepts it
 
-[Unreleased]: https://github.com/prohand/gladys-forecastsolar/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/prohand/gladys-forecastsolar/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/prohand/gladys-forecastsolar/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/prohand/gladys-forecastsolar/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/prohand/gladys-forecastsolar/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/prohand/gladys-forecastsolar/compare/v1.0.1...v1.1.0
