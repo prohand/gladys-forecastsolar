@@ -5,9 +5,12 @@
 // Rhythms, to respect the Forecast.Solar free plan (12 requests/hour/IP):
 //   - Gladys polls each CREATED device every minute;
 //   - the forecast of a house is DOWNLOADED every `refresh_interval` minutes
-//     (15 min after an error) and kept in memory;
-//   - the values are recomputed from this cache and PUBLISHED every 5 minutes
-//     (and right after each download);
+//     (15 min after an error, or when a 429 says) and kept in memory; with
+//     several houses the interval is stretched so that all of them together
+//     stay under MAX_REQUESTS_PER_HOUR (the quota is per IP, not per house);
+//   - the values are recomputed from this cache every 5 minutes (and right
+//     after each download), and PUBLISHED when they changed or at least every
+//     STATE_HEARTBEAT_MS (every state is a history row in Gladys);
 //   - production events (start / peak / end) are checked on every poll.
 // -----------------------------------------------------------------------------
 
@@ -38,6 +41,20 @@ const logger = createLogger({ name: 'forecast-solar' });
 export const PUBLISH_INTERVAL_MS = 5 * 60 * 1000;
 export const ERROR_RETRY_MS = 15 * 60 * 1000;
 export const HOUSES_RELOAD_MS = 60 * 60 * 1000;
+// A failed read of the houses (Gladys restarting…) is retried this soon, not
+// an hour later: without houses no device is polled.
+export const HOUSES_RETRY_MS = 60 * 1000;
+// The free plan allows 12 requests per hour and per IP, for every house
+// together; this leaves a margin for the "Test" button and the scene actions.
+export const MAX_REQUESTS_PER_HOUR = 10;
+// Longest wait a 429 can impose: Forecast.Solar counts over a one-hour period.
+export const MAX_RATE_LIMIT_WAIT_MS = 60 * 60 * 1000;
+// The "Test" button reuses a forecast downloaded this recently: a few clicks
+// in a row must not burn the hourly quota.
+export const FORCED_REUSE_MS = 5 * 60 * 1000;
+// An unchanged value is still published this often, so Gladys never shows a
+// stable value (tomorrow's energy, 0 W at night) as stale.
+export const STATE_HEARTBEAT_MS = 30 * 60 * 1000;
 // Two paths poll a device — the core's scheduler and the app's own loop
 // (pollCreated) — and this gap keeps them to one evaluation a minute.
 export const MIN_POLL_GAP_MS = 50 * 1000;
@@ -73,24 +90,33 @@ export function createApp(
 ) {
   let config = normalizeConfig();
   let houses = []; // located houses only
-  let housesLoadedAt = 0;
+  let housesNextLoadAt = 0;
   let housesError = null;
   let lastStatus = null;
-  // Per house: { planeKey, forecast, fetchedAt, lastAttemptAt, lastPublishedAt,
-  //              lastEvaluatedAt, error, pending }
+  // Forecast.Solar answered 429: no download before this time (ms), whatever
+  // the house — the quota is per IP.
+  let rateLimitedUntil = 0;
+  let lastLoggedRefreshMs = null;
+  // Per house: { planeKey, forecast, fetchedAt, announcedFetchedAt,
+  //              lastAttemptAt, lastPublishedAt, lastEvaluatedAt, error, pending }
   const caches = new Map();
   // Last poll of each device external_id (ms).
   const lastPollAt = new Map();
+  // Per device external_id: Map(feature external_id -> { state, at }), what
+  // Gladys was last given (recorded once publishStates resolved).
+  const publishedStates = new Map();
 
   // --- Houses -----------------------------------------------------------------
 
   async function loadHouses() {
-    housesLoadedAt = now();
     try {
       houses = locatedHouses(await gladys.getHouses());
       housesError = null;
+      housesNextLoadAt = now() + HOUSES_RELOAD_MS;
       logger.info(`${houses.length} located house(s): ${houses.map((h) => h.name).join(', ')}`);
     } catch (err) {
+      // Retried soon: the last known houses are kept meanwhile.
+      housesNextLoadAt = now() + HOUSES_RETRY_MS;
       logger.error('Cannot read the houses from Gladys:', err.message);
       housesError = {
         en: `Cannot read the houses from Gladys: ${err.message}`,
@@ -101,7 +127,7 @@ export function createApp(
   }
 
   async function reloadHousesIfOld() {
-    if (now() - housesLoadedAt >= HOUSES_RELOAD_MS) {
+    if (now() >= housesNextLoadAt) {
       await loadHouses();
     }
   }
@@ -176,6 +202,7 @@ export function createApp(
         planeKey,
         forecast: null,
         fetchedAt: 0,
+        announcedFetchedAt: 0,
         lastAttemptAt: 0,
         lastPublishedAt: 0,
         lastEvaluatedAt: 0,
@@ -196,6 +223,36 @@ export function createApp(
     }
   }
 
+  /**
+   * Download interval of each house: the configured one, stretched when the
+   * created houses together would exceed MAX_REQUESTS_PER_HOUR (4 houses every
+   * 15 min = 16 requests/hour, a 429 at every turn). Counted over ANY hour,
+   * not on average: downloads every I minutes put up to ceil(60 / I) of them
+   * in one hour, so 4 houses every 24 min would still make 12 in the first one.
+   */
+  function effectiveRefreshMs() {
+    const configuredMs = config.refresh_interval * 60 * 1000;
+    const created = new Set((gladys.devices ?? []).map((device) => device.external_id));
+    const downloading = houses.filter((house) => created.has(deviceIds(gladys, house).device));
+    const count = Math.max(1, downloading.length);
+    const perHouse = Math.floor(MAX_REQUESTS_PER_HOUR / count);
+    // Past MAX_REQUESTS_PER_HOUR houses, even one download an hour each is too
+    // many: spread them as evenly as the quota allows.
+    const quotaMinutes =
+      perHouse >= 1 ? Math.ceil(60 / perHouse) : Math.ceil((count * 60) / MAX_REQUESTS_PER_HOUR);
+    const refreshMs = Math.max(configuredMs, quotaMinutes * 60 * 1000);
+    if (refreshMs !== lastLoggedRefreshMs) {
+      lastLoggedRefreshMs = refreshMs;
+      if (refreshMs > configuredMs) {
+        logger.info(
+          `Forecast refreshed every ${refreshMs / 60000} min (not ${config.refresh_interval}): ` +
+            `${downloading.length} houses share the Forecast.Solar hourly quota`,
+        );
+      }
+    }
+    return refreshMs;
+  }
+
   async function download(house, entry) {
     entry.lastAttemptAt = now();
     try {
@@ -211,6 +268,12 @@ export function createApp(
       requestWidgetRefreshes();
     } catch (err) {
       logger.error(`Forecast download failed for ${house.name}:`, err.message);
+      if (err.isRateLimited) {
+        // Wait until Forecast.Solar says so (bounded), or the usual delay.
+        const time = now();
+        const retryAt = Number.isFinite(err.retryAt) ? err.retryAt : time + ERROR_RETRY_MS;
+        rateLimitedUntil = Math.min(Math.max(retryAt, time), time + MAX_RATE_LIMIT_WAIT_MS);
+      }
       entry.error = err.isRateLimited ? RATE_LIMIT_MESSAGE : { en: err.message, fr: err.message };
       throw err;
     } finally {
@@ -220,7 +283,8 @@ export function createApp(
 
   /**
    * Cached forecast of a house, downloaded first when it is too old (or when
-   * `force` is set, for the manual refresh button).
+   * `force` is set, for the manual refresh button — which still reuses a
+   * download of the last FORCED_REUSE_MS and waits out a 429).
    * @returns {Promise<{ entry: object, downloaded: boolean }>}
    */
   async function ensureForecast(house, { force = false } = {}) {
@@ -229,10 +293,18 @@ export function createApp(
       await entry.pending.catch(() => {});
       return { entry, downloaded: false };
     }
-    const refreshMs = config.refresh_interval * 60 * 1000;
-    const tooOld = !entry.forecast || now() - entry.fetchedAt >= refreshMs;
-    const retryAllowed = now() - entry.lastAttemptAt >= Math.min(refreshMs, ERROR_RETRY_MS);
-    if (!force && !(tooOld && retryAllowed)) {
+    const time = now();
+    const refreshMs = effectiveRefreshMs();
+    const tooOld = !entry.forecast || time - entry.fetchedAt >= refreshMs;
+    const rateLimited = time < rateLimitedUntil;
+    const retryAllowed =
+      !rateLimited && time - entry.lastAttemptAt >= Math.min(refreshMs, ERROR_RETRY_MS);
+    const forced =
+      force && !rateLimited && !(entry.forecast && time - entry.fetchedAt < FORCED_REUSE_MS);
+    if (!forced && !(tooOld && retryAllowed)) {
+      if (force && rateLimited && !entry.forecast) {
+        entry.error = RATE_LIMIT_MESSAGE;
+      }
       return { entry, downloaded: false };
     }
     entry.pending = download(house, entry);
@@ -294,14 +366,55 @@ export function createApp(
     return { house, entry };
   }
 
+  /**
+   * Publish the values of a house that changed since what Gladys was last
+   * given, or that were not re-sent for STATE_HEARTBEAT_MS. Every state is a
+   * history row (`keep_history: true`): the four features re-sent every 5 min
+   * whatever they hold would fill the database with flat lines.
+   */
   async function publish(house, entry) {
-    const values = computeForecastValues(entry.forecast, new Date(now()));
-    const states = buildStates(gladys, house, values);
+    const time = now();
+    const values = computeForecastValues(entry.forecast, new Date(time));
+    const deviceId = deviceIds(gladys, house).device;
+    const known = publishedStates.get(deviceId) ?? new Map();
+    const states = buildStates(gladys, house, values).filter(
+      ({ device_feature_external_id, state }) => {
+        const last = known.get(device_feature_external_id);
+        return !last || last.state !== state || time - last.at >= STATE_HEARTBEAT_MS;
+      },
+    );
     if (states.length > 0) {
       await gladys.publishStates(states);
+      // Recorded only once Gladys accepted them: a failed call is re-sent.
+      for (const { device_feature_external_id, state } of states) {
+        known.set(device_feature_external_id, { state, at: time });
+      }
+      publishedStates.set(deviceId, known);
     }
-    entry.lastPublishedAt = now();
+    entry.lastPublishedAt = time;
     return values;
+  }
+
+  /**
+   * Forget what was published for a device (or for every device): Gladys
+   * dropped the states sent before the device existed, and may have missed
+   * some while the integration was disconnected.
+   */
+  function forgetPublishedStates(deviceExternalId) {
+    const targets = deviceExternalId
+      ? houses.filter((house) => deviceIds(gladys, house).device === deviceExternalId)
+      : houses;
+    if (deviceExternalId) {
+      publishedStates.delete(deviceExternalId);
+    } else {
+      publishedStates.clear();
+    }
+    for (const house of targets) {
+      const entry = caches.get(house.id);
+      if (entry) {
+        entry.lastPublishedAt = 0;
+      }
+    }
   }
 
   async function fireSceneEvent(key, data) {
@@ -331,7 +444,7 @@ export function createApp(
       logger.debug(`Poll ignored: no located house for ${device.external_id}`);
       return;
     }
-    const { entry, downloaded } = await ensureForecast(house);
+    const { entry } = await ensureForecast(house);
     if (!entry.forecast) {
       return;
     }
@@ -342,7 +455,12 @@ export function createApp(
 
     // Scene events: only from the poll, never as a consequence of a scene
     // action (a scene bound to the event would loop through the integration).
-    if (downloaded) {
+    // A download made by a scene action, a widget or the "Test" button is
+    // still announced, here, on the next poll: the event says a new forecast
+    // exists, whoever fetched it. No loop: a scene reacting to it reads the
+    // cache, and a new download only happens once the interval has passed.
+    if (entry.fetchedAt > entry.announcedFetchedAt) {
+      entry.announcedFetchedAt = entry.fetchedAt;
       const event = forecastUpdatedEvent(entry.forecast, device.external_id, house.name, time);
       await fireSceneEvent(event.key, event.data);
     }
@@ -420,9 +538,20 @@ export function createApp(
       return houses.map((house) => buildDevice(gladys, house));
     },
 
+    forgetPublishedStates,
+
     /** The user just added a device: publish its values right away. */
     async onDeviceCreated(device) {
       if (houseOfDevice(device.external_id)) {
+        forgetPublishedStates(device.external_id);
+        await poll(device, { force: true });
+      }
+    },
+
+    /** Same on an update: the features may have just been (re)created. */
+    async onDeviceUpdated(device) {
+      if (houseOfDevice(device.external_id)) {
+        forgetPublishedStates(device.external_id);
         await poll(device, { force: true });
       }
     },

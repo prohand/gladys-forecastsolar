@@ -166,3 +166,13 @@ test('dayRange covers the forecast points of a day', () => {
     to: at('2026-10-03T19:26:05+02:00'),
   });
 });
+
+test('power is unknown, not 0 W, past the last forecast point', () => {
+  // Last point of the fixture: 2026-10-03T19:26:05+02:00 (tomorrow's sunset).
+  const justAfter = computeForecastValues(forecast, new Date('2026-10-03T20:00:00+02:00'));
+  assert.equal(justAfter.powerNow, 0, 'within the margin it is still the night');
+  const later = computeForecastValues(forecast, new Date('2026-10-03T23:00:00+02:00'));
+  assert.equal(later.powerNow, null);
+  const nextMorning = computeForecastValues(forecast, new Date('2026-10-04T10:00:00+02:00'));
+  assert.equal(nextMorning.powerNow, null);
+});

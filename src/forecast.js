@@ -68,6 +68,10 @@ const round = (value, decimals) => {
 
 const whToKwh = (wh) => round(wh / 1000, 2);
 
+// How far outside its first / last point the power curve is still trusted.
+export const BEFORE_FIRST_POINT_MS = 24 * 3600 * 1000;
+export const AFTER_LAST_POINT_MS = 3600 * 1000;
+
 /**
  * Compute the published values at a given time.
  * A value is `null` when the forecast does not cover it (e.g. a cache from
@@ -91,12 +95,16 @@ export function computeForecastValues(forecast, now = new Date()) {
   const tomorrowWh = forecast.wattHoursDay?.[tomorrow];
 
   // Power: interpolated between the forecast points (0 at night). Outside the
-  // forecast window the value is unknown, not 0.
+  // forecast window the value is unknown, not 0. Before the first point is the
+  // night before today's sunrise (a forecast downloaded at night). After the
+  // last point (tomorrow's sunset) the forecast says nothing more: past a
+  // short margin, a cache that could not be refreshed would otherwise publish
+  // a flat 0 W through the next day, which reads like a measurement.
   const powerPoints = toPoints(forecast.watts);
   const covered =
     powerPoints.length > 0 &&
-    time >= powerPoints[0][0] - 24 * 3600 * 1000 &&
-    time <= powerPoints[powerPoints.length - 1][0] + 24 * 3600 * 1000;
+    time >= powerPoints[0][0] - BEFORE_FIRST_POINT_MS &&
+    time <= powerPoints[powerPoints.length - 1][0] + AFTER_LAST_POINT_MS;
   const powerNow = covered ? Math.max(0, Math.round(interpolate(powerPoints, time))) : null;
 
   // Remaining today: today's total minus the energy already produced, read on

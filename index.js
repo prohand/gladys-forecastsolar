@@ -17,6 +17,14 @@
 import { GladysIntegration, logger } from '@gladysassistant/integration-sdk';
 import { createApp } from './src/app.js';
 
+// A promise rejected with no handler (a scene event or a widget nudge sent
+// while Gladys restarts…) would otherwise end the process on Node >= 15: the
+// container would restart and forget the forecast cache, costing quota. Log
+// it and keep running; real crashes (uncaught exceptions) still exit.
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled promise rejection', reason);
+});
+
 const gladys = new GladysIntegration();
 const app = createApp(gladys);
 
@@ -52,6 +60,9 @@ gladys.onPoll((device) => app.poll(device));
 // --- The user added a device: publish its values without waiting ------------
 gladys.onDeviceCreated((device) => app.onDeviceCreated(device));
 
+// --- The user updated a device (e.g. "Update" in Discovery): same replay ----
+gladys.onDeviceUpdated((device) => app.onDeviceUpdated(device));
+
 // --- Manifest actions: buttons in the Configuration screen -------------------
 for (const [key, handler] of Object.entries(app.actions)) {
   gladys.onAction(key, (fields) => handler(fields));
@@ -82,6 +93,8 @@ gladys.on('connected', async () => {
   // Armed first: a failed synchronization (network not up yet) must not leave
   // the devices without a refresh.
   startRefreshLoop();
+  // States sent while disconnected may be lost: publish everything again.
+  app.forgetPublishedStates();
   try {
     app.setConfig(await gladys.getConfig());
     await app.synchronize();
@@ -94,6 +107,13 @@ gladys.on('connected', async () => {
       })
       .catch(() => {});
   }
+});
+
+// Paused while Gladys is away: every poll would only fail to publish. The
+// 'connected' handler re-arms it on reconnection.
+gladys.on('disconnected', () => {
+  logger.info('Disconnected from Gladys -> refresh loop paused');
+  stopRefreshLoop();
 });
 
 // --- Graceful shutdown -------------------------------------------------------
