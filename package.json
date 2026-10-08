@@ -1,6 +1,6 @@
 {
   "name": "gladys-forecastsolar",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "description": "Gladys Assistant external integration: solar production forecast from Forecast.Solar.",
   "type": "module",
