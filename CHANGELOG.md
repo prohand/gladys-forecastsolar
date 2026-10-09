@@ -6,6 +6,10 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- The manifest declares its transport: `cloud` (the Forecast.Solar API).
+
 ## [1.2.2] - 2026-10-08
 
 - Maintenance release, no functional change.

@@ -132,3 +132,7 @@ test('every user-facing text is translated in English and French', () => {
     assert.ok(text.en && text.fr, `missing translation: ${JSON.stringify(text)}`);
   }
 });
+
+test('the manifest declares the transports used (the Forecast.Solar API is a cloud service)', () => {
+  assert.deepEqual(manifest.transports, ['cloud']);
+});
