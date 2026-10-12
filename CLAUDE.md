@@ -48,9 +48,12 @@ src/widgets.js               widgets solar_forecast and solar_best_window (pure)
   house (`caches`), and shared by one in-flight promise. A 429 stops every house until its
   `retry-at` (`rateLimitedUntil`); the Test button reuses a download younger than
   `FORCED_REUSE_MS`. Values are recomputed from the cache at most every 5 min
-  (`PUBLISH_INTERVAL_MS`) and only published when changed, or every `STATE_HEARTBEAT_MS`
-  (reset on `onDeviceCreated` / `onDeviceUpdated` / `connected`). Never add a download to a
-  widget or scene path beyond `ensureForecast()`.
+  (`PUBLISH_INTERVAL_MS`) and only published when changed, or every `STATE_HEARTBEAT_MS`:
+  `gladys.publishChangedStates(states, { heartbeat })` (SDK 0.15) does that dedupe.
+  `app.forgetPublishedStates()` resets it (`gladys.forgetPublishedStates`) and the 5-min pace on
+  `onDeviceCreated` / `onDeviceUpdated` / `connected` — the SDK forgets on device events by
+  itself, never on a reconnection. Never add a download to a widget or scene path beyond
+  `ensureForecast()`.
 - **Only created devices cost quota**: `createdHouses()` filters houses by the devices Gladys
   holds. Houses have no update event: they are re-read on connect, on scan and every hour.
 - **The cache key is the plane** (house position + tilt + azimuth + kWp + key): changing any of
@@ -58,7 +61,8 @@ src/widgets.js               widgets solar_forecast and solar_best_window (pure)
 - **Location is personal data**: `"location": true` in the manifest is what allows
   `gladys.getHouses()` (403 without it). Coordinates are never logged nor published: the
   request URL is logged through `redactedEstimateUrl()`.
-- **Polling**: devices declare `poll_frequency: 60000` (the slowest value Gladys accepts; any
+- **Polling**: devices declare `DEVICE_POLL_FREQUENCIES.EVERY_MINUTES` (60000 ms, the slowest
+  value Gladys accepts; any
   other value rejects the whole discovery) and `should_poll: true` (default `false` in the core,
   read once at creation). `app.pollCreated()`, run every minute by index.js, covers the devices
   created before that flag; both paths share `lastPollAt` (`MIN_POLL_GAP_MS`), so a device is
@@ -82,6 +86,8 @@ bounds, the action/widget/scene keys and their outputs. Change both sides togeth
 
 `createApp(fakeGladys, { now, fetchForecastImpl })` is tested with an injected clock and API
 client; `test/fixtures/estimate.json` is a real API answer. No test touches the network.
+`test/helpers/fakeGladys.js` mirrors `publishChangedStates` / `forgetPublishedStates`, on the
+test's clock (`now`) rather than `Date.now()`, so the heartbeat follows the fake time.
 
 ## Conventions
 

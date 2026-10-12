@@ -102,10 +102,6 @@ export function createApp(
   const caches = new Map();
   // Last poll of each device external_id (ms).
   const lastPollAt = new Map();
-  // Per device external_id: Map(feature external_id -> { state, at }), what
-  // Gladys was last given (recorded once publishStates resolved).
-  const publishedStates = new Map();
-
   // --- Houses -----------------------------------------------------------------
 
   async function loadHouses() {
@@ -377,22 +373,13 @@ export function createApp(
   async function publish(house, entry) {
     const time = now();
     const values = computeForecastValues(entry.forecast, new Date(time));
-    const deviceId = deviceIds(gladys, house).device;
-    const known = publishedStates.get(deviceId) ?? new Map();
-    const states = buildStates(gladys, house, values).filter(
-      ({ device_feature_external_id, state }) => {
-        const last = known.get(device_feature_external_id);
-        return !last || last.state !== state || time - last.at >= STATE_HEARTBEAT_MS;
-      },
-    );
-    if (states.length > 0) {
-      await gladys.publishStates(states);
-      // Recorded only once Gladys accepted them: a failed call is re-sent.
-      for (const { device_feature_external_id, state } of states) {
-        known.set(device_feature_external_id, { state, at: time });
-      }
-      publishedStates.set(deviceId, known);
-    }
+    // The SDK keeps what Gladys last ACCEPTED per feature (a failed call is
+    // re-sent by the next one) and skips the equal values, heartbeat apart.
+    // computeForecastValues rounds them first (W, then 0.01 kWh), so "equal"
+    // is equal as displayed, not float noise.
+    await gladys.publishChangedStates(buildStates(gladys, house, values), {
+      heartbeat: STATE_HEARTBEAT_MS,
+    });
     entry.lastPublishedAt = time;
     return values;
   }
@@ -400,17 +387,16 @@ export function createApp(
   /**
    * Forget what was published for a device (or for every device): Gladys
    * dropped the states sent before the device existed, and may have missed
-   * some while the integration was disconnected.
+   * some while the integration was disconnected. The SDK already forgets a
+   * device's values when Gladys announces its creation or update, but not on a
+   * reconnection, and it knows nothing of the 5-minute publication pace: both
+   * are reset here.
    */
   function forgetPublishedStates(deviceExternalId) {
     const targets = deviceExternalId
       ? houses.filter((house) => deviceIds(gladys, house).device === deviceExternalId)
       : houses;
-    if (deviceExternalId) {
-      publishedStates.delete(deviceExternalId);
-    } else {
-      publishedStates.clear();
-    }
+    gladys.forgetPublishedStates(deviceExternalId || undefined);
     for (const house of targets) {
       const entry = caches.get(house.id);
       if (entry) {
