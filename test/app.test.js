@@ -21,8 +21,8 @@ const GLADYS_POLL_FREQUENCIES = [60000, 30000, 15000, 10000, 2000, 1000];
 
 /** App with a fake clock and a fake API client counting the downloads. */
 function setup({ fail = null, createdDevices, houses } = {}) {
-  const gladys = createFakeGladys({ houses, createdDevices });
   const clock = { now: at('2026-10-02T15:00:00+02:00') };
+  const gladys = createFakeGladys({ houses, createdDevices, now: () => clock.now });
   const calls = [];
   const app = createApp(gladys, {
     now: () => clock.now,
@@ -435,4 +435,21 @@ test('unchanged values wait for the heartbeat; a created device gets them all', 
   clock.now += STATE_HEARTBEAT_MS;
   await app.poll(device);
   assert.equal(gladys.published.length, 20, 'the heartbeat re-sends stable values');
+});
+
+test('values Gladys refused are re-sent at the next publication, unchanged or not', async () => {
+  const { app, gladys, clock, device } = setup();
+  await app.loadHouses();
+  clock.now = at('2026-10-02T22:00:00+02:00'); // night: nothing moves
+  const publishStates = gladys.publishStates;
+  gladys.publishStates = async () => {
+    throw new Error('HTTP 429');
+  };
+  await assert.rejects(app.poll(device), /429/);
+  assert.equal(gladys.published.length, 0);
+
+  gladys.publishStates = publishStates;
+  clock.now += PUBLISH_INTERVAL_MS;
+  await app.poll(device);
+  assert.equal(gladys.published.length, 4, 'a refused value is not remembered as sent');
 });

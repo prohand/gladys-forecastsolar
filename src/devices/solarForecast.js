@@ -6,6 +6,7 @@
 // -----------------------------------------------------------------------------
 
 import {
+  DEVICE_POLL_FREQUENCIES,
   DEVICE_FEATURE_CATEGORIES,
   DEVICE_FEATURE_TYPES,
   DEVICE_FEATURE_UNITS,
@@ -15,7 +16,7 @@ export const DEVICE_TYPE = 'solar-forecast';
 
 // Gladys only accepts a few poll frequencies, in MILLISECONDS; one minute is
 // the slowest one. The real pace (downloads, publications) is set in app.js.
-export const POLL_FREQUENCY_MS = 60 * 1000;
+export const POLL_FREQUENCY_MS = DEVICE_POLL_FREQUENCIES.EVERY_MINUTES;
 
 // Feature keys, kept in one place so discovery, polling and widgets agree.
 export const FEATURE = {
