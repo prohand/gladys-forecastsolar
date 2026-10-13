@@ -48,9 +48,9 @@ export function loadingContent() {
 }
 
 export const NOT_READY_MESSAGE = {
-  en: 'No forecast yet. Add the device from the Discovery tab and wait a minute.',
+  en: 'No forecast yet. Add the device from the Discover tab and wait a minute.',
   fr: "Pas encore de prévision. Ajoutez l'appareil depuis l'onglet Découverte et patientez une minute.",
-  de: 'Noch keine Prognose. Fügen Sie das Gerät über den Tab „Entdecken“ hinzu und warten Sie eine Minute.',
+  de: 'Noch keine Prognose. Füge das Gerät über den Tab „Entdecken“ hinzu und warte eine Minute.',
   es: 'Todavía no hay previsión. Añada el dispositivo desde la pestaña «Descubrir» y espere un minuto.',
 };
 

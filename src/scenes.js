@@ -6,7 +6,7 @@
 //
 // Triggers are EVENTS ("production starts now"), fired once when the moment
 // is reached. A threshold ("tomorrow > 10 kWh") is a STATE: use the standard
-// Gladys "device value" trigger on the device features for that.
+// Gladys "Device state change" trigger on the device features for that.
 // -----------------------------------------------------------------------------
 
 import {

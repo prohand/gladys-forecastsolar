@@ -1,6 +1,6 @@
 # Forecast.Solar
 
-Diese Integration zeigt in Gladys die **Ertragsprognose** Ihrer Solarmodule
+Diese Integration zeigt in Gladys die **Ertragsprognose** deiner Solarmodule
 an, berechnet vom kostenlosen Dienst [Forecast.Solar](https://forecast.solar)
 auf Grundlage der Wettervorhersage.
 
@@ -9,16 +9,16 @@ Erfordert **Gladys 5.1.0** oder neuer.
 ## Häuser
 
 Der Standort stammt aus den **in Gladys eingerichteten Häusern**
-(**Einstellungen > Zuhause**): Bei der Installation bittet Gladys Sie, den
+(**Einstellungen > Zuhause**): Bei der Installation bittet Gladys dich, den
 Zugriff auf den Standort der Häuser zu erlauben.
 
 - Jedes Haus **mit Standort** erscheint als Gerät im Tab **Entdecken**.
-- Fügen Sie **nur** die Häuser hinzu, die Solarmodule haben: Nur diese werden
+- Füge **nur** die Häuser hinzu, die Solarmodule haben: Nur diese werden
   abgefragt (keine verschwendete Anfrage).
-- Ein Haus ohne Standort erscheint nicht: Legen Sie seinen Standort in Gladys
-  fest und starten Sie dann erneut eine Suche.
+- Ein Haus ohne Standort erscheint nicht: Lege seinen Standort in Gladys
+  fest und starte dann erneut eine Suche.
 
-## Was Sie erhalten
+## Was du erhältst
 
 Für jedes hinzugefügte Haus ein Gerät **Solar forecast** mit 4 Sensoren:
 
@@ -34,14 +34,14 @@ Energieüberwachung von Gladys nicht berücksichtigt.
 
 ## Konfiguration
 
-1. Öffnen Sie den Tab **Konfiguration** der Integration.
-2. Beschreiben Sie Ihre Module:
+1. Öffne den Tab **Konfiguration** der Integration.
+2. Beschreibe deine Module:
    - **Neigung**: 0° = flach, 90° = senkrecht (auf einem Dach oft 30 bis 35°);
    - **Ausrichtung**: 0° = Süden, -90° = Osten, 90° = Westen, 180° = Norden;
-   - **Spitzenleistung** in Wp, ganze Zahl (z. B. 3000 für 3 kWp; steht in Ihrem Vertrag oder auf dem Wechselrichter).
-3. Der **API-Schlüssel** ist optional: Lassen Sie ihn für den kostenlosen
+   - **Spitzenleistung** in Wp, ganze Zahl (z. B. 3000 für 3 kWp; steht in deinem Vertrag oder auf dem Wechselrichter).
+3. Der **API-Schlüssel** ist optional: Lass ihn für den kostenlosen
    Tarif leer.
-4. Speichern Sie und fügen Sie dann das Gerät Ihres Hauses über den Tab
+4. Speichere und füge dann das Gerät deines Hauses über den Tab
    **Entdecken** hinzu.
 
 Diese Einstellungen gelten für alle hinzugefügten Häuser.
@@ -56,7 +56,7 @@ herunter und zeigt eine Zusammenfassung für heute und morgen an.
 | **Solarprognose**         | Aktuelle Leistung, Energie heute / Rest / morgen, Leistungskurve, Spitze |
 | **Bester Solar-Zeitraum** | Bester Zeitpunkt für ein Gerät mit N Stunden Laufzeit, heute und morgen  |
 
-Wählen Sie im Widget das Gerät (das Haus) und für den besten Zeitraum die
+Wähle im Widget das Gerät (das Haus) und für den besten Zeitraum die
 Laufzeit des Geräts (Waschmaschine 2 h, Geschirrspüler 3 h…).
 
 ## Szenen
@@ -74,7 +74,7 @@ Optionaler Filter auf das Haus (leer = alle). Für die folgenden Aktionen
 verfügbare Variablen: Haus, aktuelle Leistung, Energie heute, Rest, morgen,
 Spitzenleistung und Uhrzeit der Spitze.
 
-Für einen **Schwellenwert** („wenn morgen > 10 kWh“) verwenden Sie den
+Für einen **Schwellenwert** („wenn morgen > 10 kWh“) verwende den
 Standardauslöser „Änderung von Gerätestatus“ von Gladys auf dem Sensor
 „Estimated energy tomorrow“.
 
@@ -94,7 +94,7 @@ dann „Minuten bis zum Start“ abwarten und die Waschmaschine starten.
 - Die Prognose wird standardmäßig alle 60 Minuten heruntergeladen (15 bis
   1440 Minuten), pro hinzugefügtem Haus.
 - Der kostenlose Tarif erlaubt **12 Anfragen pro Stunde** und IP-Adresse, für
-  alle Ihre Häuser zusammen. Bei mehreren Häusern wird das Intervall
+  alle deine Häuser zusammen. Bei mehreren Häusern wird das Intervall
   automatisch verlängert, sodass sie nie mehr als 10 Anfragen pro Stunde
   stellen (3 Häuser: höchstens alle 20 Minuten, 4 oder 5 Häuser: alle
   30 Minuten, 6 bis 10 Häuser: jede Stunde); das konfigurierte Intervall
@@ -113,19 +113,19 @@ dann „Minuten bis zum Start“ abwarten und die Waschmaschine starten.
   heruntergeladen werden konnte: Sie ist unbekannt, nicht 0 W.
 - Die Häuser werden bei jedem Start, bei jeder Suche und jede Stunde neu
   gelesen (nach einem Fehler eine Minute später).
-- Eine Modulfläche pro Haus. Geben Sie bei einer Ost-/West-Anlage die
+- Eine Modulfläche pro Haus. Gib bei einer Ost-/West-Anlage die
   Ausrichtung und die Spitzenleistung der Hauptfläche ein.
 
 ## Fehlerbehebung
 
 - **„Konfiguration unvollständig oder ungültig“**: Ein Pflichtfeld ist leer
   oder außerhalb des zulässigen Bereichs (der Feldname wird angegeben).
-- **„Kein Haus mit Standort“**: Legen Sie den Standort eines Hauses unter
+- **„Kein Haus mit Standort“**: Lege den Standort eines Hauses unter
   **Einstellungen > Zuhause** fest.
-- **„Anfragelimit von Forecast.Solar erreicht“**: zu viele Anfragen von Ihrer
+- **„Anfragelimit von Forecast.Solar erreicht“**: zu viele Anfragen von deiner
   IP-Adresse (vielleicht nutzt ein anderes Tool ebenfalls Forecast.Solar).
-  Erhöhen Sie das Aktualisierungsintervall.
-- Für Details lesen Sie die Protokolle der Integration in Gladys (oder
-  `docker logs` auf dem Host) mit `LOG_LEVEL=debug`. Die Koordinaten Ihrer
-  Häuser und Ihr API-Schlüssel werden in den protokollierten Anfragen maskiert
+  Erhöhe das Aktualisierungsintervall.
+- Für Details lies die Protokolle der Integration in Gladys (oder
+  `docker logs` auf dem Host) mit `LOG_LEVEL=debug`. Die Koordinaten deiner
+  Häuser und dein API-Schlüssel werden in den protokollierten Anfragen maskiert
   (`***`).

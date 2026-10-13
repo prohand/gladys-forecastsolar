@@ -5,7 +5,7 @@
   "description": {
     "en": "Solar production forecast for your PV panels: power now, energy today and tomorrow.",
     "fr": "Prévision de production solaire : puissance actuelle, énergie du jour et du lendemain.",
-    "de": "Solarertragsprognose für Ihre PV-Anlage: aktuelle Leistung, Energie heute und morgen.",
+    "de": "Solarertragsprognose für deine PV-Anlage: aktuelle Leistung, Energie heute und morgen.",
     "es": "Previsión de producción solar de sus paneles: potencia actual, energía de hoy y mañana."
   },
   "version": "1.3.1",
@@ -28,7 +28,7 @@
       "description": {
         "en": "The forecast uses the location of your houses in Gladys (Settings > Houses): one device per located house, add only the ones with solar panels. Then describe the panels below. Free plan: no account, 12 requests per hour.",
         "fr": "La prévision utilise la position de vos maisons dans Gladys (Paramètres > Maisons) : un appareil par maison localisée, n'ajoutez que celles qui ont des panneaux. Décrivez ensuite les panneaux ci-dessous. Offre gratuite : sans compte, 12 requêtes par heure.",
-        "de": "Die Prognose nutzt den Standort Ihrer Häuser in Gladys (Einstellungen > Zuhause): ein Gerät pro Haus mit Standort, fügen Sie nur die mit Solarmodulen hinzu. Beschreiben Sie anschließend unten die Module. Kostenloser Tarif: kein Konto, 12 Anfragen pro Stunde.",
+        "de": "Die Prognose nutzt den Standort deiner Häuser in Gladys (Einstellungen > Zuhause): ein Gerät pro Haus mit Standort, füge nur die mit Solarmodulen hinzu. Beschreibe anschließend unten die Module. Kostenloser Tarif: kein Konto, 12 Anfragen pro Stunde.",
         "es": "La previsión utiliza la ubicación de sus viviendas en Gladys (Configuración > Viviendas): un dispositivo por vivienda ubicada, añada solo las que tienen paneles solares. Después describa los paneles a continuación. Plan gratuito: sin cuenta, 12 solicitudes por hora."
       },
       "links": [

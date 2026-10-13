@@ -3,7 +3,7 @@
 //
 // The manifest declares `"location": true`, so `gladys.getHouses()` returns
 // `[{ id, name, selector, latitude, longitude }]`. Each LOCATED house gets its
-// own solar forecast device; the user only adds (from the Discovery tab) the
+// own solar forecast device; the user only adds (from the Discover tab) the
 // devices of the houses that really have solar panels, and only those are
 // polled — so no request is wasted on the Forecast.Solar quota.
 // -----------------------------------------------------------------------------
@@ -22,6 +22,6 @@ export function locatedHouses(houses = []) {
 export const NO_LOCATED_HOUSE_MESSAGE = {
   en: 'No house with a location in Gladys: set it in Settings > Houses.',
   fr: 'Aucune maison localisée dans Gladys : renseignez sa position dans Paramètres > Maisons.',
-  de: 'Kein Haus mit Standort in Gladys: legen Sie ihn unter Einstellungen > Zuhause fest.',
+  de: 'Kein Haus mit Standort in Gladys: lege ihn unter Einstellungen > Zuhause fest.',
   es: 'Ninguna vivienda con ubicación en Gladys: defínala en Configuración > Viviendas.',
 };
