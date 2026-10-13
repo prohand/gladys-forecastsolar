@@ -8,8 +8,8 @@
     "de": "Solarertragsprognose für deine PV-Anlage: aktuelle Leistung, Energie heute und morgen.",
     "es": "Previsión de producción solar de sus paneles: potencia actual, energía de hoy y mañana."
   },
-  "version": "1.3.1",
-  "docker_image": "ghcr.io/prohand/gladys-forecastsolar:1.3.1",
+  "version": "1.4.0",
+  "docker_image": "ghcr.io/prohand/gladys-forecastsolar:1.4.0",
   "gladys_version": ">=5.1.0",
   "cover_image": "https://raw.githubusercontent.com/prohand/gladys-forecastsolar/main/cover.png",
   "categories": ["energy"],
