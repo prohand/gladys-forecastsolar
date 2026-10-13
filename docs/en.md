@@ -12,11 +12,11 @@ The location comes from the **houses configured in Gladys**
 (**Settings > Houses**): at install time, Gladys asks you to allow access to
 the location of the houses.
 
-- Each **located** house shows up as a device in the **Discovery** tab.
+- Each **located** house shows up as a device in the **Discover** tab.
 - Add **only** the houses that have solar panels: only those are queried (no
   request wasted).
 - A house without location does not show up: set its location in Gladys,
-  then run a discovery again.
+  then press **Scan** in the **Discover** tab.
 
 ## What you get
 
@@ -30,7 +30,7 @@ For each added house, one **Solar forecast** device with 4 sensors:
 | Estimated energy tomorrow        | kWh  | Estimated production for tomorrow         |
 
 These are **forecasts**, not measurements: they are not counted in the Gladys
-energy monitoring.
+**Energy Monitoring**.
 
 ## Configuration
 
@@ -40,7 +40,7 @@ energy monitoring.
    - **Orientation**: 0° = south, -90° = east, 90° = west, 180° = north;
    - **Peak power** in Wp, whole number (e.g. 3000 for 3 kWp; written on your contract or inverter).
 3. The **API key** is optional: leave it empty for the free plan.
-4. Save, then add the device of your house from the **Discovery** tab.
+4. Save, then add the device of your house from the **Discover** tab.
 
 These settings apply to every added house.
 
@@ -73,7 +73,7 @@ actions: house, power now, energy today, remaining, tomorrow, peak power and
 time.
 
 For a **threshold** ("if tomorrow > 10 kWh"), use the standard Gladys
-"device value" trigger on the "Estimated energy tomorrow" sensor.
+"Device state change" trigger on the "Estimated energy tomorrow" sensor.
 
 ### Actions
 

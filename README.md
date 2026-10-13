@@ -9,7 +9,8 @@ Built from the official
 with the JavaScript SDK
 [`@gladysassistant/integration-sdk`](https://github.com/GladysAssistant/integration-sdk-js).
 
-User documentation: [English](docs/en.md) · [Français](docs/fr.md).
+User documentation: [English](docs/en.md) · [Français](docs/fr.md) · [Deutsch](docs/de.md) ·
+[Español](docs/es.md).
 
 ## Features
 
@@ -60,7 +61,7 @@ checked on every poll.
 │  ├─ houses.js                      # located houses
 │  └─ config.js                      # config defaults, normalization, checks
 ├─ test/                             # node --test (fixture = real API answer)
-├─ docs/en.md, docs/fr.md            # user documentation
+├─ docs/{en,fr,de,es}.md             # user documentation
 ├─ gladys-assistant-integration.json # manifest
 ├─ Dockerfile
 └─ cover.png                         # catalog cover, 800×534 px

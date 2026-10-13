@@ -138,6 +138,8 @@ test('a failed download is reported and retried later, not every minute', async 
   const status = gladys.connectionStatuses.at(-1);
   assert.equal(status.connected, false);
   assert.match(status.message.fr, /Home : Limite de requêtes/);
+  assert.match(status.message.de, /^Home: Anfragelimit/);
+  assert.match(status.message.es, /^Home: Se ha alcanzado el límite/);
 
   clock.now += MINUTE;
   await app.poll(device);
@@ -195,6 +197,8 @@ test('test_forecast downloads now and summarizes each house', async () => {
   assert.equal(calls.length, 1);
   assert.equal(message.en, 'Home: 5.35 kWh today, 4.51 kWh tomorrow');
   assert.equal(message.fr, "Home : 5.35 kWh aujourd'hui, 4.51 kWh demain");
+  assert.equal(message.de, 'Home: 5.35 kWh heute, 4.51 kWh morgen');
+  assert.equal(message.es, 'Home: 5.35 kWh hoy, 4.51 kWh mañana');
 });
 
 test('scene actions read the forecast of the chosen device', async () => {

@@ -52,4 +52,6 @@ test('out of range values are reported', () => {
   const message = configErrorMessage(config);
   assert.match(message.en, /declination, azimuth, wp/);
   assert.match(message.fr, /declination, azimuth, wp/);
+  assert.match(message.de, /declination, azimuth, wp/);
+  assert.match(message.es, /declination, azimuth, wp/);
 });
