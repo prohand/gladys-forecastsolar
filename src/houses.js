@@ -22,4 +22,6 @@ export function locatedHouses(houses = []) {
 export const NO_LOCATED_HOUSE_MESSAGE = {
   en: 'No house with a location in Gladys: set it in Settings > Houses.',
   fr: 'Aucune maison localisée dans Gladys : renseignez sa position dans Paramètres > Maisons.',
+  de: 'Kein Haus mit Standort in Gladys: legen Sie ihn unter Einstellungen > Zuhause fest.',
+  es: 'Ninguna vivienda con ubicación en Gladys: defínala en Configuración > Viviendas.',
 };

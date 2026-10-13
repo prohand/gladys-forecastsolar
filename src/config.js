@@ -87,5 +87,7 @@ export function configErrorMessage(config) {
   return {
     en: `Configuration incomplete or invalid: ${list}.`,
     fr: `Configuration incomplète ou invalide : ${list}.`,
+    de: `Konfiguration unvollständig oder ungültig: ${list}.`,
+    es: `Configuración incompleta o no válida: ${list}.`,
   };
 }

@@ -1,0 +1,131 @@
+# Forecast.Solar
+
+Esta integración muestra en Gladys la **previsión de producción** de sus
+paneles solares, calculada por el servicio gratuito
+[Forecast.Solar](https://forecast.solar) a partir de la previsión meteorológica.
+
+Requiere **Gladys 5.1.0** o posterior.
+
+## Viviendas
+
+La ubicación procede de las **viviendas configuradas en Gladys**
+(**Configuración > Viviendas**): durante la instalación, Gladys le pide que
+autorice el acceso a la ubicación de las viviendas.
+
+- Cada vivienda **ubicada** aparece como un dispositivo en la pestaña
+  **Descubrir**.
+- Añada **solo** las viviendas que tienen paneles solares: solo se consultan
+  esas (ninguna solicitud desperdiciada).
+- Una vivienda sin ubicación no aparece: defina su ubicación en Gladys y
+  vuelva a lanzar una búsqueda.
+
+## Qué obtiene
+
+Para cada vivienda añadida, un dispositivo **Solar forecast** con 4 sensores:
+
+| Sensor                           | Unidad | Contenido                                  |
+| -------------------------------- | ------ | ------------------------------------------ |
+| Estimated power now              | W      | Potencia estimada en este momento          |
+| Estimated energy today           | kWh    | Producción estimada para todo el día       |
+| Estimated energy remaining today | kWh    | Producción estimada hasta el final del día |
+| Estimated energy tomorrow        | kWh    | Producción estimada para mañana            |
+
+Son **previsiones**, no mediciones: no se tienen en cuenta en la supervisión
+de energía de Gladys.
+
+## Configuración
+
+1. Abra la pestaña **Configuración** de la integración.
+2. Describa sus paneles:
+   - **Inclinación**: 0° = horizontal, 90° = vertical (a menudo de 30 a 35° en un tejado);
+   - **Orientación**: 0° = sur, -90° = este, 90° = oeste, 180° = norte;
+   - **Potencia pico** en Wp, número entero (p. ej. 3000 para 3 kWp; figura en su contrato o en el inversor).
+3. La **clave de API** es opcional: déjela vacía para el plan gratuito.
+4. Guarde y, a continuación, añada el dispositivo de su vivienda desde la
+   pestaña **Descubrir**.
+
+Estos ajustes se aplican a todas las viviendas añadidas.
+
+El botón **Actualizar la previsión ahora** descarga la previsión de inmediato
+y muestra un resumen para hoy y mañana.
+
+## Widgets del panel
+
+| Widget                 | Contenido                                                              |
+| ---------------------- | ---------------------------------------------------------------------- |
+| **Previsión solar**    | Potencia actual, energía de hoy / restante / mañana, curva, pico       |
+| **Mejor franja solar** | Mejor momento para poner en marcha un aparato de N horas, hoy y mañana |
+
+En el widget, elija el dispositivo (la vivienda) y, para la mejor franja, la
+duración del aparato (lavadora 2 h, lavavajillas 3 h…).
+
+## Escenas
+
+### Desencadenantes
+
+| Desencadenante                | Cuándo                                            |
+| ----------------------------- | ------------------------------------------------- |
+| Previsión solar actualizada   | Cada vez que se descarga una nueva previsión      |
+| Inicio de la producción solar | Inicio estimado de la producción (salida del sol) |
+| Pico de producción solar      | Pico estimado de producción del día               |
+| Fin de la producción solar    | Fin estimado de la producción (puesta del sol)    |
+
+Filtro opcional por vivienda (vacío = cualquiera). Variables disponibles para
+las acciones siguientes: vivienda, potencia actual, energía de hoy, restante,
+mañana, potencia y hora del pico.
+
+Para un **umbral** («si mañana > 10 kWh»), utilice el desencadenante estándar
+de Gladys «Cambio de estado del dispositivo» sobre el sensor
+«Estimated energy tomorrow».
+
+### Acciones
+
+| Acción                                 | Parámetros              | Resultados                                                         |
+| -------------------------------------- | ----------------------- | ------------------------------------------------------------------ |
+| Leer la previsión solar                | vivienda                | potencia, energía de hoy / restante / mañana, pico                 |
+| Producción solar de las próximas horas | vivienda, horas         | energía (kWh), potencia media y máxima (W)                         |
+| Buscar la mejor franja solar           | vivienda, duración, día | encontrada, hora de inicio / fin, energía, minutos hasta el inicio |
+
+Ejemplo: cada mañana a las 8, «Buscar la mejor franja solar» (2 h, hoy), luego
+esperar «minutos hasta el inicio» y poner en marcha la lavadora.
+
+## Funcionamiento
+
+- La previsión se descarga cada 60 minutos por defecto (de 15 a 1440
+  minutos), por vivienda añadida.
+- El plan gratuito permite **12 solicitudes por hora** por dirección IP, para
+  todas sus viviendas en conjunto. Con varias viviendas, el intervalo se
+  alarga automáticamente para que nunca hagan más de 10 solicitudes en una
+  hora (3 viviendas: cada 20 minutos como mucho, 4 o 5 viviendas: cada
+  30 minutos, de 6 a 10 viviendas: cada hora); el intervalo configurado sigue
+  siendo el mínimo.
+- En caso de error, la integración vuelve a intentarlo 15 minutos después y
+  conserva la última previsión conocida. Cuando se alcanza el límite, espera
+  hasta la hora indicada por Forecast.Solar antes de cualquier nueva
+  solicitud.
+- El botón **Actualizar la previsión ahora** vuelve a descargar la previsión,
+  salvo si se descargó hace menos de 5 minutos.
+- Entre dos descargas, los valores se recalculan cada 5 minutos (la potencia
+  sigue la curva del sol) y se publican cuando cambian, o al menos cada
+  30 minutos, para que el historial siga siendo pequeño.
+- Tras el último punto de la previsión (la puesta del sol de mañana), la
+  potencia estimada deja de publicarse si no se ha podido descargar ninguna
+  previsión nueva: es desconocida, no 0 W.
+- Las viviendas se vuelven a leer en cada arranque, en cada búsqueda y cada
+  hora (un minuto después tras un fallo).
+- Un plano de paneles por vivienda. Para una instalación este/oeste,
+  introduzca la orientación y la potencia pico del plano principal.
+
+## Solución de problemas
+
+- **«Configuración incompleta o no válida»**: un campo obligatorio está vacío
+  o fuera de rango (se indica el nombre del campo).
+- **«Ninguna vivienda con ubicación»**: defina la ubicación de una vivienda en
+  **Configuración > Viviendas**.
+- **«Se ha alcanzado el límite de solicitudes de Forecast.Solar»**: demasiadas
+  solicitudes desde su dirección IP (puede que otra herramienta también use
+  Forecast.Solar). Aumente el intervalo de actualización.
+- Para más detalles, consulte los registros de la integración desde Gladys (o
+  `docker logs` en el servidor) con `LOG_LEVEL=debug`. Las coordenadas de sus
+  viviendas y su clave de API aparecen enmascaradas (`***`) en las solicitudes
+  registradas.

@@ -113,23 +113,46 @@ test('widget labels and descriptions fit the Gladys limits', () => {
   }
 });
 
-test('every user-facing text is translated in English and French', () => {
-  const fieldTexts = (fields = []) => fields.flatMap((f) => [f.label, f.description]);
-  const texts = [
-    manifest.description,
-    ...fieldTexts(manifest.config_schema),
-    ...(manifest.actions ?? []).map((a) => a.label),
-    ...[...manifest.scene_triggers, ...manifest.scene_actions, ...manifest.widgets].flatMap((e) => [
-      e.label,
-      e.description,
-      ...fieldTexts(e.fields),
-      ...fieldTexts(e.settings),
-      ...fieldTexts(e.variables),
-      ...fieldTexts(e.outputs),
-    ]),
-  ].filter(Boolean);
-  for (const text of texts) {
-    assert.ok(text.en && text.fr, `missing translation: ${JSON.stringify(text)}`);
+// Gladys and the store accept any 2-letter key (`en` required); the Gladys UI
+// speaks these four, so every text of the manifest carries all of them.
+const LANGUAGES = ['en', 'fr', 'de', 'es'];
+
+/** Every multi-language object of the manifest (any object carrying `en`). */
+function multiLanguageTexts(node, path = '$', found = []) {
+  if (Array.isArray(node)) {
+    node.forEach((child, index) => multiLanguageTexts(child, `${path}[${index}]`, found));
+  } else if (node && typeof node === 'object') {
+    if (typeof node.en === 'string') {
+      found.push({ path, text: node });
+    } else {
+      for (const [key, child] of Object.entries(node)) {
+        multiLanguageTexts(child, `${path}.${key}`, found);
+      }
+    }
+  }
+  return found;
+}
+
+test('every user-facing text is translated in English, French, German and Spanish', () => {
+  const texts = multiLanguageTexts(manifest);
+  assert.ok(texts.length > 50, 'the walk must find the manifest texts');
+  for (const { path, text } of texts) {
+    assert.deepEqual(Object.keys(text).sort(), [...LANGUAGES].sort(), path);
+    for (const language of LANGUAGES) {
+      assert.ok(text[language].trim().length > 0, `${path}.${language}`);
+    }
+  }
+});
+
+test('the catalog description and section texts fit the store limits in every language', () => {
+  for (const language of LANGUAGES) {
+    const text = manifest.description[language];
+    assert.ok(text.length >= 10 && text.length <= 100, `${language}: ${text}`);
+  }
+  for (const section of manifest.config_schema.filter((f) => f.type === 'section')) {
+    for (const language of LANGUAGES) {
+      assert.ok(section.description[language].length <= 1000, `${section.key}.${language}`);
+    }
   }
 });
 

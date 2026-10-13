@@ -71,11 +71,15 @@ const clamp = (value, min, max, fallback) => {
 const RATE_LIMIT_MESSAGE = {
   en: 'Forecast.Solar request limit reached, retrying later.',
   fr: 'Limite de requêtes Forecast.Solar atteinte, nouvel essai plus tard.',
+  de: 'Anfragelimit von Forecast.Solar erreicht, neuer Versuch später.',
+  es: 'Se ha alcanzado el límite de solicitudes de Forecast.Solar, se reintentará más tarde.',
 };
 
 const UNKNOWN_DEVICE_MESSAGE = {
   en: 'Unknown solar forecast device (house deleted or without location?).',
   fr: 'Appareil de prévision solaire inconnu (maison supprimée ou sans position ?).',
+  de: 'Unbekanntes Solarprognose-Gerät (Haus gelöscht oder ohne Standort?).',
+  es: 'Dispositivo de previsión solar desconocido (¿vivienda eliminada o sin ubicación?).',
 };
 
 /**
@@ -117,6 +121,8 @@ export function createApp(
       housesError = {
         en: `Cannot read the houses from Gladys: ${err.message}`,
         fr: `Impossible de lire les maisons de Gladys : ${err.message}`,
+        de: `Die Häuser können nicht aus Gladys gelesen werden: ${err.message}`,
+        es: `No se pueden leer las viviendas de Gladys: ${err.message}`,
       };
     }
     return houses;
@@ -162,7 +168,12 @@ export function createApp(
       if (error) {
         return {
           connected: false,
-          message: { en: `${house.name}: ${error.en}`, fr: `${house.name} : ${error.fr}` },
+          message: {
+            en: `${house.name}: ${error.en}`,
+            fr: `${house.name} : ${error.fr}`,
+            de: `${house.name}: ${error.de ?? error.en}`,
+            es: `${house.name}: ${error.es ?? error.en}`,
+          },
         };
       }
     }
@@ -270,7 +281,9 @@ export function createApp(
         const retryAt = Number.isFinite(err.retryAt) ? err.retryAt : time + ERROR_RETRY_MS;
         rateLimitedUntil = Math.min(Math.max(retryAt, time), time + MAX_RATE_LIMIT_WAIT_MS);
       }
-      entry.error = err.isRateLimited ? RATE_LIMIT_MESSAGE : { en: err.message, fr: err.message };
+      entry.error = err.isRateLimited
+        ? RATE_LIMIT_MESSAGE
+        : { en: err.message, fr: err.message, de: err.message, es: err.message };
       throw err;
     } finally {
       await reportStatus();
@@ -585,6 +598,12 @@ export function createApp(
               (l) =>
                 `${l.house} : ${l.today ?? '?'} kWh aujourd'hui, ${l.tomorrow ?? '?'} kWh demain`,
             )
+            .join(' · '),
+          de: lines
+            .map((l) => `${l.house}: ${l.today ?? '?'} kWh heute, ${l.tomorrow ?? '?'} kWh morgen`)
+            .join(' · '),
+          es: lines
+            .map((l) => `${l.house}: ${l.today ?? '?'} kWh hoy, ${l.tomorrow ?? '?'} kWh mañana`)
             .join(' · '),
         };
       },

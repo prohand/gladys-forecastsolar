@@ -39,6 +39,8 @@ export function loadingContent() {
         text: {
           en: 'Downloading the forecast, this takes longer than usual…',
           fr: 'Téléchargement de la prévision, plus long que d’habitude…',
+          de: 'Die Prognose wird heruntergeladen, das dauert länger als üblich…',
+          es: 'Descargando la previsión, tarda más de lo habitual…',
         },
       },
     ],
@@ -48,6 +50,8 @@ export function loadingContent() {
 export const NOT_READY_MESSAGE = {
   en: 'No forecast yet. Add the device from the Discovery tab and wait a minute.',
   fr: "Pas encore de prévision. Ajoutez l'appareil depuis l'onglet Découverte et patientez une minute.",
+  de: 'Noch keine Prognose. Fügen Sie das Gerät über den Tab „Entdecken“ hinzu und warten Sie eine Minute.',
+  es: 'Todavía no hay previsión. Añada el dispositivo desde la pestaña «Descubrir» y espere un minuto.',
 };
 
 const profileText = (profile, timeZone) =>
@@ -78,7 +82,7 @@ export function solarForecastContent({ forecast, ids, houseName, fetchedAt, now 
         {
           t: new Date(profile.peakTime).toISOString(),
           value: profile.peakPower,
-          label: { en: 'Peak', fr: 'Pic' },
+          label: { en: 'Peak', fr: 'Pic', de: 'Spitze', es: 'Pico' },
           color: WIDGET_COLORS.WARNING,
         },
       ]
@@ -90,43 +94,65 @@ export function solarForecastContent({ forecast, ids, houseName, fetchedAt, now 
       { type: 'text', variant: 'caption', text: `${houseName} · Forecast.Solar` },
       {
         type: 'value',
-        label: { en: 'Power now', fr: 'Puissance actuelle' },
+        label: {
+          en: 'Power now',
+          fr: 'Puissance actuelle',
+          de: 'Aktuelle Leistung',
+          es: 'Potencia actual',
+        },
         icon: 'sun',
         color: WIDGET_COLORS.WARNING,
         device_feature: ids.feature(FEATURE.POWER_NOW),
       },
       {
         type: 'value',
-        label: { en: 'Today', fr: "Aujourd'hui" },
+        label: { en: 'Today', fr: "Aujourd'hui", de: 'Heute', es: 'Hoy' },
         icon: 'calendar',
         device_feature: ids.feature(FEATURE.ENERGY_TODAY),
       },
       {
         type: 'value',
-        label: { en: 'Remaining today', fr: "Reste aujourd'hui" },
+        label: {
+          en: 'Remaining today',
+          fr: "Reste aujourd'hui",
+          de: 'Rest heute',
+          es: 'Resto de hoy',
+        },
         icon: 'battery-charging',
         device_feature: ids.feature(FEATURE.ENERGY_REMAINING_TODAY),
       },
       {
         type: 'value',
-        label: { en: 'Tomorrow', fr: 'Demain' },
+        label: { en: 'Tomorrow', fr: 'Demain', de: 'Morgen', es: 'Mañana' },
         icon: 'sunrise',
         device_feature: ids.feature(FEATURE.ENERGY_TOMORROW),
       },
       {
         type: 'chart',
         chart_type: WIDGET_CHART_TYPES.AREA,
-        title: { en: 'Estimated power', fr: 'Puissance estimée' },
+        title: {
+          en: 'Estimated power',
+          fr: 'Puissance estimée',
+          de: 'Geschätzte Leistung',
+          es: 'Potencia estimada',
+        },
         unit: 'W',
         now_marker: true,
-        series: [{ name: { en: 'Power', fr: 'Puissance' }, points }],
+        series: [
+          { name: { en: 'Power', fr: 'Puissance', de: 'Leistung', es: 'Potencia' }, points },
+        ],
         annotations,
       },
       {
         type: 'status',
         items: [
           {
-            label: { en: 'Peak today', fr: "Pic aujourd'hui" },
+            label: {
+              en: 'Peak today',
+              fr: "Pic aujourd'hui",
+              de: 'Spitze heute',
+              es: 'Pico de hoy',
+            },
             value: profile?.peakTime
               ? `${profile.peakPower} W · ${formatTime(profile.peakTime, tz)}`
               : '—',
@@ -134,13 +160,23 @@ export function solarForecastContent({ forecast, ids, houseName, fetchedAt, now 
             color: WIDGET_COLORS.WARNING,
           },
           {
-            label: { en: 'Production today', fr: "Production aujourd'hui" },
+            label: {
+              en: 'Production today',
+              fr: "Production aujourd'hui",
+              de: 'Produktion heute',
+              es: 'Producción de hoy',
+            },
             value: profileText(profile, tz),
             icon: 'clock',
             color: WIDGET_COLORS.INFO,
           },
           {
-            label: { en: 'Updated at', fr: 'Mise à jour' },
+            label: {
+              en: 'Updated at',
+              fr: 'Mise à jour',
+              de: 'Aktualisiert um',
+              es: 'Actualizado a las',
+            },
             value: formatTime(fetchedAt, tz),
             icon: 'refresh-cw',
             color: WIDGET_COLORS.NEUTRAL,
@@ -173,20 +209,27 @@ export function bestWindowContent({ forecast, houseName, durationHours, now }) {
         text: {
           en: `${houseName} · appliance running ${durationHours} h`,
           fr: `${houseName} · appareil de ${durationHours} h`,
+          de: `${houseName} · Gerät mit ${durationHours} h Laufzeit`,
+          es: `${houseName} · aparato de ${durationHours} h`,
         },
       },
       {
         type: 'value',
         label: nextIsTomorrow
-          ? { en: 'Start tomorrow', fr: 'Départ demain' }
-          : { en: 'Start', fr: 'Départ' },
+          ? { en: 'Start tomorrow', fr: 'Départ demain', de: 'Start morgen', es: 'Inicio mañana' }
+          : { en: 'Start', fr: 'Départ', de: 'Start', es: 'Inicio' },
         icon: 'play-circle',
         color: next ? WIDGET_COLORS.SUCCESS : WIDGET_COLORS.NEUTRAL,
         value: next ? next.startTime : '—',
       },
       {
         type: 'value',
-        label: { en: 'Solar energy', fr: 'Énergie solaire' },
+        label: {
+          en: 'Solar energy',
+          fr: 'Énergie solaire',
+          de: 'Solarenergie',
+          es: 'Energía solar',
+        },
         icon: 'zap',
         color: WIDGET_COLORS.WARNING,
         value: next ? next.energy : 0,
@@ -196,13 +239,13 @@ export function bestWindowContent({ forecast, houseName, durationHours, now }) {
         type: 'status',
         items: [
           {
-            label: { en: 'Today', fr: "Aujourd'hui" },
+            label: { en: 'Today', fr: "Aujourd'hui", de: 'Heute', es: 'Hoy' },
             value: windowText(today),
             icon: 'sun',
             color: today ? WIDGET_COLORS.SUCCESS : WIDGET_COLORS.NEUTRAL,
           },
           {
-            label: { en: 'Tomorrow', fr: 'Demain' },
+            label: { en: 'Tomorrow', fr: 'Demain', de: 'Morgen', es: 'Mañana' },
             value: windowText(tomorrow),
             icon: 'sunrise',
             color: tomorrow ? WIDGET_COLORS.SUCCESS : WIDGET_COLORS.NEUTRAL,

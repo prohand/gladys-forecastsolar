@@ -5,6 +5,7 @@ import {
   NOT_READY_MESSAGE,
   bestWindowContent,
   emptyContent,
+  loadingContent,
   solarForecastContent,
 } from '../src/widgets.js';
 import { createFakeGladys, HOUSES } from './helpers/fakeGladys.js';
@@ -57,4 +58,41 @@ test('solar_best_window switches to tomorrow after sunset', () => {
 
 test('the empty content is valid', () => {
   assert.deepEqual(validateWidgetContent(emptyContent(NOT_READY_MESSAGE)), []);
+});
+
+test('every widget text is translated in English, French, German and Spanish', () => {
+  const texts = [];
+  const collect = (node) => {
+    if (Array.isArray(node)) {
+      node.forEach(collect);
+    } else if (node && typeof node === 'object') {
+      if (typeof node.en === 'string') {
+        texts.push(node);
+      } else {
+        Object.values(node).forEach(collect);
+      }
+    }
+  };
+  collect([
+    solarForecastContent({
+      forecast: FORECAST,
+      ids: deviceIds(gladys, HOUSES[0]),
+      houseName: 'Home',
+      fetchedAt: now,
+      now,
+    }),
+    bestWindowContent({ forecast: FORECAST, houseName: 'Home', durationHours: 2, now }),
+    bestWindowContent({
+      forecast: FORECAST,
+      houseName: 'Home',
+      durationHours: 2,
+      now: at('2026-10-02T20:00:00+02:00'),
+    }),
+    loadingContent(),
+    NOT_READY_MESSAGE,
+  ]);
+  assert.ok(texts.length > 10);
+  for (const text of texts) {
+    assert.deepEqual(Object.keys(text).sort(), ['de', 'en', 'es', 'fr'], JSON.stringify(text));
+  }
 });

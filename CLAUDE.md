@@ -92,5 +92,5 @@ test's clock (`now`) rather than `Date.now()`, so the heartbeat follows the fake
 ## Conventions
 
 Prettier formats, ESLint catches mistakes. Comments explain **why**, in English. User-facing
-messages are bilingual `{ en, fr }`. User docs: `docs/en.md` and `docs/fr.md`, kept in sync. The
-container rootfs is read-only: write nothing.
+text is `{ en, fr, de, es }`. User docs: `docs/en.md`, `docs/fr.md`, `docs/de.md` and `docs/es.md`,
+kept in sync. The container rootfs is read-only: write nothing.

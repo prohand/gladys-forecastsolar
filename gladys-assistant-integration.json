@@ -4,7 +4,9 @@
   "name": "Forecast.Solar",
   "description": {
     "en": "Solar production forecast for your PV panels: power now, energy today and tomorrow.",
-    "fr": "Prévision de production solaire : puissance actuelle, énergie du jour et du lendemain."
+    "fr": "Prévision de production solaire : puissance actuelle, énergie du jour et du lendemain.",
+    "de": "Solarertragsprognose für Ihre PV-Anlage: aktuelle Leistung, Energie heute und morgen.",
+    "es": "Previsión de producción solar de sus paneles: potencia actual, energía de hoy y mañana."
   },
   "version": "1.3.1",
   "docker_image": "ghcr.io/prohand/gladys-forecastsolar:1.3.1",
@@ -19,25 +21,33 @@
       "type": "section",
       "label": {
         "en": "Getting started",
-        "fr": "Pour commencer"
+        "fr": "Pour commencer",
+        "de": "Erste Schritte",
+        "es": "Primeros pasos"
       },
       "description": {
         "en": "The forecast uses the location of your houses in Gladys (Settings > Houses): one device per located house, add only the ones with solar panels. Then describe the panels below. Free plan: no account, 12 requests per hour.",
-        "fr": "La prévision utilise la position de vos maisons dans Gladys (Paramètres > Maisons) : un appareil par maison localisée, n'ajoutez que celles qui ont des panneaux. Décrivez ensuite les panneaux ci-dessous. Offre gratuite : sans compte, 12 requêtes par heure."
+        "fr": "La prévision utilise la position de vos maisons dans Gladys (Paramètres > Maisons) : un appareil par maison localisée, n'ajoutez que celles qui ont des panneaux. Décrivez ensuite les panneaux ci-dessous. Offre gratuite : sans compte, 12 requêtes par heure.",
+        "de": "Die Prognose nutzt den Standort Ihrer Häuser in Gladys (Einstellungen > Zuhause): ein Gerät pro Haus mit Standort, fügen Sie nur die mit Solarmodulen hinzu. Beschreiben Sie anschließend unten die Module. Kostenloser Tarif: kein Konto, 12 Anfragen pro Stunde.",
+        "es": "La previsión utiliza la ubicación de sus viviendas en Gladys (Configuración > Viviendas): un dispositivo por vivienda ubicada, añada solo las que tienen paneles solares. Después describa los paneles a continuación. Plan gratuito: sin cuenta, 12 solicitudes por hora."
       },
       "links": [
         {
           "url": "https://forecast.solar",
           "label": {
             "en": "Forecast.Solar website",
-            "fr": "Site de Forecast.Solar"
+            "fr": "Site de Forecast.Solar",
+            "de": "Website von Forecast.Solar",
+            "es": "Sitio web de Forecast.Solar"
           }
         },
         {
           "url": "https://doc.forecast.solar/api:estimate",
           "label": {
             "en": "API documentation",
-            "fr": "Documentation de l'API"
+            "fr": "Documentation de l'API",
+            "de": "API-Dokumentation",
+            "es": "Documentación de la API"
           }
         }
       ]
@@ -47,11 +57,15 @@
       "type": "number",
       "label": {
         "en": "Tilt (°)",
-        "fr": "Inclinaison (°)"
+        "fr": "Inclinaison (°)",
+        "de": "Neigung (°)",
+        "es": "Inclinación (°)"
       },
       "description": {
         "en": "Angle of the panels: 0 = flat, 90 = vertical.",
-        "fr": "Angle des panneaux : 0 = à plat, 90 = vertical."
+        "fr": "Angle des panneaux : 0 = à plat, 90 = vertical.",
+        "de": "Neigungswinkel der Module: 0 = flach, 90 = senkrecht.",
+        "es": "Ángulo de los paneles: 0 = horizontal, 90 = vertical."
       },
       "required": true,
       "default": 35,
@@ -63,11 +77,15 @@
       "type": "number",
       "label": {
         "en": "Orientation (°)",
-        "fr": "Orientation (°)"
+        "fr": "Orientation (°)",
+        "de": "Ausrichtung (°)",
+        "es": "Orientación (°)"
       },
       "description": {
         "en": "Direction the panels face: 0 = south, -90 = east, 90 = west, 180 = north.",
-        "fr": "Direction des panneaux : 0 = sud, -90 = est, 90 = ouest, 180 = nord."
+        "fr": "Direction des panneaux : 0 = sud, -90 = est, 90 = ouest, 180 = nord.",
+        "de": "Himmelsrichtung der Module: 0 = Süden, -90 = Osten, 90 = Westen, 180 = Norden.",
+        "es": "Dirección de los paneles: 0 = sur, -90 = este, 90 = oeste, 180 = norte."
       },
       "required": true,
       "default": 0,
@@ -79,11 +97,15 @@
       "type": "number",
       "label": {
         "en": "Peak power (Wp)",
-        "fr": "Puissance crête (Wc)"
+        "fr": "Puissance crête (Wc)",
+        "de": "Spitzenleistung (Wp)",
+        "es": "Potencia pico (Wp)"
       },
       "description": {
         "en": "Installed peak power of the panels, in watt-peak (whole number), e.g. 3000 for 3 kWp or 6200 for 6.2 kWp.",
-        "fr": "Puissance crête installée des panneaux, en watt-crête (nombre entier), par exemple 3000 pour 3 kWc ou 6200 pour 6,2 kWc."
+        "fr": "Puissance crête installée des panneaux, en watt-crête (nombre entier), par exemple 3000 pour 3 kWc ou 6200 pour 6,2 kWc.",
+        "de": "Installierte Spitzenleistung der Module in Watt-Peak (ganze Zahl), z. B. 3000 für 3 kWp oder 6200 für 6,2 kWp.",
+        "es": "Potencia pico instalada de los paneles, en vatios pico (número entero), p. ej. 3000 para 3 kWp o 6200 para 6,2 kWp."
       },
       "required": true,
       "min": 10,
@@ -94,11 +116,15 @@
       "type": "secret",
       "label": {
         "en": "API key (optional)",
-        "fr": "Clé d'API (facultative)"
+        "fr": "Clé d'API (facultative)",
+        "de": "API-Schlüssel (optional)",
+        "es": "Clave de API (opcional)"
       },
       "description": {
         "en": "Leave empty for the free plan.",
-        "fr": "Laissez vide pour l'offre gratuite."
+        "fr": "Laissez vide pour l'offre gratuite.",
+        "de": "Für den kostenlosen Tarif leer lassen.",
+        "es": "Déjela vacía para el plan gratuito."
       },
       "required": false
     },
@@ -107,11 +133,15 @@
       "type": "number",
       "label": {
         "en": "Forecast refresh interval (min)",
-        "fr": "Intervalle de mise à jour de la prévision (min)"
+        "fr": "Intervalle de mise à jour de la prévision (min)",
+        "de": "Aktualisierungsintervall der Prognose (min)",
+        "es": "Intervalo de actualización de la previsión (min)"
       },
       "description": {
         "en": "How often the forecast is downloaded again. The values shown in Gladys are still updated every 5 minutes.",
-        "fr": "Fréquence de téléchargement de la prévision. Les valeurs affichées dans Gladys restent mises à jour toutes les 5 minutes."
+        "fr": "Fréquence de téléchargement de la prévision. Les valeurs affichées dans Gladys restent mises à jour toutes les 5 minutes.",
+        "de": "Wie oft die Prognose neu heruntergeladen wird. Die in Gladys angezeigten Werte werden trotzdem alle 5 Minuten aktualisiert.",
+        "es": "Frecuencia con la que se vuelve a descargar la previsión. Los valores mostrados en Gladys se siguen actualizando cada 5 minutos."
       },
       "required": false,
       "default": 60,
@@ -124,7 +154,9 @@
       "key": "test_forecast",
       "label": {
         "en": "Refresh the forecast now",
-        "fr": "Mettre à jour la prévision maintenant"
+        "fr": "Mettre à jour la prévision maintenant",
+        "de": "Prognose jetzt aktualisieren",
+        "es": "Actualizar la previsión ahora"
       },
       "timeout_seconds": 30
     }
@@ -134,11 +166,15 @@
       "key": "forecast_updated",
       "label": {
         "en": "Solar forecast updated",
-        "fr": "Prévision solaire mise à jour"
+        "fr": "Prévision solaire mise à jour",
+        "de": "Solarprognose aktualisiert",
+        "es": "Previsión solar actualizada"
       },
       "description": {
         "en": "A new forecast was downloaded (every refresh interval).",
-        "fr": "Une nouvelle prévision a été téléchargée (à chaque intervalle de mise à jour)."
+        "fr": "Une nouvelle prévision a été téléchargée (à chaque intervalle de mise à jour).",
+        "de": "Eine neue Prognose wurde heruntergeladen (bei jedem Aktualisierungsintervall).",
+        "es": "Se ha descargado una nueva previsión (en cada intervalo de actualización)."
       },
       "fields": [
         {
@@ -147,11 +183,15 @@
           "source": "devices",
           "label": {
             "en": "Solar forecast",
-            "fr": "Prévision solaire"
+            "fr": "Prévision solaire",
+            "de": "Solarprognose",
+            "es": "Previsión solar"
           },
           "description": {
             "en": "Leave empty for any house.",
-            "fr": "Laissez vide pour toutes les maisons."
+            "fr": "Laissez vide pour toutes les maisons.",
+            "de": "Für alle Häuser leer lassen.",
+            "es": "Déjelo vacío para cualquier vivienda."
           }
         }
       ],
@@ -161,7 +201,9 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Haus",
+            "es": "Vivienda"
           }
         },
         {
@@ -169,7 +211,9 @@
           "type": "number",
           "label": {
             "en": "Estimated power now (W)",
-            "fr": "Puissance estimée actuelle (W)"
+            "fr": "Puissance estimée actuelle (W)",
+            "de": "Geschätzte aktuelle Leistung (W)",
+            "es": "Potencia estimada actual (W)"
           }
         },
         {
@@ -177,7 +221,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy today (kWh)",
-            "fr": "Énergie estimée aujourd'hui (kWh)"
+            "fr": "Énergie estimée aujourd'hui (kWh)",
+            "de": "Geschätzte Energie heute (kWh)",
+            "es": "Energía estimada hoy (kWh)"
           }
         },
         {
@@ -185,7 +231,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy remaining today (kWh)",
-            "fr": "Énergie estimée restante aujourd'hui (kWh)"
+            "fr": "Énergie estimée restante aujourd'hui (kWh)",
+            "de": "Geschätzte Restenergie heute (kWh)",
+            "es": "Energía estimada restante hoy (kWh)"
           }
         },
         {
@@ -193,7 +241,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy tomorrow (kWh)",
-            "fr": "Énergie estimée demain (kWh)"
+            "fr": "Énergie estimée demain (kWh)",
+            "de": "Geschätzte Energie morgen (kWh)",
+            "es": "Energía estimada mañana (kWh)"
           }
         },
         {
@@ -201,7 +251,9 @@
           "type": "number",
           "label": {
             "en": "Peak power of the day (W)",
-            "fr": "Puissance du pic de la journée (W)"
+            "fr": "Puissance du pic de la journée (W)",
+            "de": "Spitzenleistung des Tages (W)",
+            "es": "Potencia del pico del día (W)"
           }
         },
         {
@@ -209,7 +261,9 @@
           "type": "string",
           "label": {
             "en": "Time of the peak (HH:MM)",
-            "fr": "Heure du pic (HH:MM)"
+            "fr": "Heure du pic (HH:MM)",
+            "de": "Uhrzeit der Spitze (HH:MM)",
+            "es": "Hora del pico (HH:MM)"
           }
         }
       ]
@@ -218,11 +272,15 @@
       "key": "production_started",
       "label": {
         "en": "Solar production starts",
-        "fr": "Début de la production solaire"
+        "fr": "Début de la production solaire",
+        "de": "Beginn der Solarproduktion",
+        "es": "Inicio de la producción solar"
       },
       "description": {
         "en": "The estimated solar production starts (around sunrise).",
-        "fr": "La production solaire estimée commence (vers le lever du soleil)."
+        "fr": "La production solaire estimée commence (vers le lever du soleil).",
+        "de": "Die geschätzte Solarproduktion beginnt (gegen Sonnenaufgang).",
+        "es": "Comienza la producción solar estimada (hacia la salida del sol)."
       },
       "fields": [
         {
@@ -231,11 +289,15 @@
           "source": "devices",
           "label": {
             "en": "Solar forecast",
-            "fr": "Prévision solaire"
+            "fr": "Prévision solaire",
+            "de": "Solarprognose",
+            "es": "Previsión solar"
           },
           "description": {
             "en": "Leave empty for any house.",
-            "fr": "Laissez vide pour toutes les maisons."
+            "fr": "Laissez vide pour toutes les maisons.",
+            "de": "Für alle Häuser leer lassen.",
+            "es": "Déjelo vacío para cualquier vivienda."
           }
         }
       ],
@@ -245,7 +307,9 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Haus",
+            "es": "Vivienda"
           }
         },
         {
@@ -253,7 +317,9 @@
           "type": "number",
           "label": {
             "en": "Estimated power now (W)",
-            "fr": "Puissance estimée actuelle (W)"
+            "fr": "Puissance estimée actuelle (W)",
+            "de": "Geschätzte aktuelle Leistung (W)",
+            "es": "Potencia estimada actual (W)"
           }
         },
         {
@@ -261,7 +327,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy today (kWh)",
-            "fr": "Énergie estimée aujourd'hui (kWh)"
+            "fr": "Énergie estimée aujourd'hui (kWh)",
+            "de": "Geschätzte Energie heute (kWh)",
+            "es": "Energía estimada hoy (kWh)"
           }
         },
         {
@@ -269,7 +337,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy remaining today (kWh)",
-            "fr": "Énergie estimée restante aujourd'hui (kWh)"
+            "fr": "Énergie estimée restante aujourd'hui (kWh)",
+            "de": "Geschätzte Restenergie heute (kWh)",
+            "es": "Energía estimada restante hoy (kWh)"
           }
         },
         {
@@ -277,7 +347,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy tomorrow (kWh)",
-            "fr": "Énergie estimée demain (kWh)"
+            "fr": "Énergie estimée demain (kWh)",
+            "de": "Geschätzte Energie morgen (kWh)",
+            "es": "Energía estimada mañana (kWh)"
           }
         },
         {
@@ -285,7 +357,9 @@
           "type": "number",
           "label": {
             "en": "Peak power of the day (W)",
-            "fr": "Puissance du pic de la journée (W)"
+            "fr": "Puissance du pic de la journée (W)",
+            "de": "Spitzenleistung des Tages (W)",
+            "es": "Potencia del pico del día (W)"
           }
         },
         {
@@ -293,7 +367,9 @@
           "type": "string",
           "label": {
             "en": "Time of the peak (HH:MM)",
-            "fr": "Heure du pic (HH:MM)"
+            "fr": "Heure du pic (HH:MM)",
+            "de": "Uhrzeit der Spitze (HH:MM)",
+            "es": "Hora del pico (HH:MM)"
           }
         }
       ]
@@ -302,11 +378,15 @@
       "key": "production_peak",
       "label": {
         "en": "Solar production peak",
-        "fr": "Pic de production solaire"
+        "fr": "Pic de production solaire",
+        "de": "Spitze der Solarproduktion",
+        "es": "Pico de producción solar"
       },
       "description": {
         "en": "The estimated solar production reaches its peak of the day.",
-        "fr": "La production solaire estimée atteint son pic de la journée."
+        "fr": "La production solaire estimée atteint son pic de la journée.",
+        "de": "Die geschätzte Solarproduktion erreicht ihre Tagesspitze.",
+        "es": "La producción solar estimada alcanza su pico del día."
       },
       "fields": [
         {
@@ -315,11 +395,15 @@
           "source": "devices",
           "label": {
             "en": "Solar forecast",
-            "fr": "Prévision solaire"
+            "fr": "Prévision solaire",
+            "de": "Solarprognose",
+            "es": "Previsión solar"
           },
           "description": {
             "en": "Leave empty for any house.",
-            "fr": "Laissez vide pour toutes les maisons."
+            "fr": "Laissez vide pour toutes les maisons.",
+            "de": "Für alle Häuser leer lassen.",
+            "es": "Déjelo vacío para cualquier vivienda."
           }
         }
       ],
@@ -329,7 +413,9 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Haus",
+            "es": "Vivienda"
           }
         },
         {
@@ -337,7 +423,9 @@
           "type": "number",
           "label": {
             "en": "Estimated power now (W)",
-            "fr": "Puissance estimée actuelle (W)"
+            "fr": "Puissance estimée actuelle (W)",
+            "de": "Geschätzte aktuelle Leistung (W)",
+            "es": "Potencia estimada actual (W)"
           }
         },
         {
@@ -345,7 +433,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy today (kWh)",
-            "fr": "Énergie estimée aujourd'hui (kWh)"
+            "fr": "Énergie estimée aujourd'hui (kWh)",
+            "de": "Geschätzte Energie heute (kWh)",
+            "es": "Energía estimada hoy (kWh)"
           }
         },
         {
@@ -353,7 +443,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy remaining today (kWh)",
-            "fr": "Énergie estimée restante aujourd'hui (kWh)"
+            "fr": "Énergie estimée restante aujourd'hui (kWh)",
+            "de": "Geschätzte Restenergie heute (kWh)",
+            "es": "Energía estimada restante hoy (kWh)"
           }
         },
         {
@@ -361,7 +453,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy tomorrow (kWh)",
-            "fr": "Énergie estimée demain (kWh)"
+            "fr": "Énergie estimée demain (kWh)",
+            "de": "Geschätzte Energie morgen (kWh)",
+            "es": "Energía estimada mañana (kWh)"
           }
         },
         {
@@ -369,7 +463,9 @@
           "type": "number",
           "label": {
             "en": "Peak power of the day (W)",
-            "fr": "Puissance du pic de la journée (W)"
+            "fr": "Puissance du pic de la journée (W)",
+            "de": "Spitzenleistung des Tages (W)",
+            "es": "Potencia del pico del día (W)"
           }
         },
         {
@@ -377,7 +473,9 @@
           "type": "string",
           "label": {
             "en": "Time of the peak (HH:MM)",
-            "fr": "Heure du pic (HH:MM)"
+            "fr": "Heure du pic (HH:MM)",
+            "de": "Uhrzeit der Spitze (HH:MM)",
+            "es": "Hora del pico (HH:MM)"
           }
         }
       ]
@@ -386,11 +484,15 @@
       "key": "production_ended",
       "label": {
         "en": "Solar production ends",
-        "fr": "Fin de la production solaire"
+        "fr": "Fin de la production solaire",
+        "de": "Ende der Solarproduktion",
+        "es": "Fin de la producción solar"
       },
       "description": {
         "en": "The estimated solar production ends (around sunset).",
-        "fr": "La production solaire estimée s'arrête (vers le coucher du soleil)."
+        "fr": "La production solaire estimée s'arrête (vers le coucher du soleil).",
+        "de": "Die geschätzte Solarproduktion endet (gegen Sonnenuntergang).",
+        "es": "Termina la producción solar estimada (hacia la puesta del sol)."
       },
       "fields": [
         {
@@ -399,11 +501,15 @@
           "source": "devices",
           "label": {
             "en": "Solar forecast",
-            "fr": "Prévision solaire"
+            "fr": "Prévision solaire",
+            "de": "Solarprognose",
+            "es": "Previsión solar"
           },
           "description": {
             "en": "Leave empty for any house.",
-            "fr": "Laissez vide pour toutes les maisons."
+            "fr": "Laissez vide pour toutes les maisons.",
+            "de": "Für alle Häuser leer lassen.",
+            "es": "Déjelo vacío para cualquier vivienda."
           }
         }
       ],
@@ -413,7 +519,9 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Haus",
+            "es": "Vivienda"
           }
         },
         {
@@ -421,7 +529,9 @@
           "type": "number",
           "label": {
             "en": "Estimated power now (W)",
-            "fr": "Puissance estimée actuelle (W)"
+            "fr": "Puissance estimée actuelle (W)",
+            "de": "Geschätzte aktuelle Leistung (W)",
+            "es": "Potencia estimada actual (W)"
           }
         },
         {
@@ -429,7 +539,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy today (kWh)",
-            "fr": "Énergie estimée aujourd'hui (kWh)"
+            "fr": "Énergie estimée aujourd'hui (kWh)",
+            "de": "Geschätzte Energie heute (kWh)",
+            "es": "Energía estimada hoy (kWh)"
           }
         },
         {
@@ -437,7 +549,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy remaining today (kWh)",
-            "fr": "Énergie estimée restante aujourd'hui (kWh)"
+            "fr": "Énergie estimée restante aujourd'hui (kWh)",
+            "de": "Geschätzte Restenergie heute (kWh)",
+            "es": "Energía estimada restante hoy (kWh)"
           }
         },
         {
@@ -445,7 +559,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy tomorrow (kWh)",
-            "fr": "Énergie estimée demain (kWh)"
+            "fr": "Énergie estimée demain (kWh)",
+            "de": "Geschätzte Energie morgen (kWh)",
+            "es": "Energía estimada mañana (kWh)"
           }
         },
         {
@@ -453,7 +569,9 @@
           "type": "number",
           "label": {
             "en": "Peak power of the day (W)",
-            "fr": "Puissance du pic de la journée (W)"
+            "fr": "Puissance du pic de la journée (W)",
+            "de": "Spitzenleistung des Tages (W)",
+            "es": "Potencia del pico del día (W)"
           }
         },
         {
@@ -461,7 +579,9 @@
           "type": "string",
           "label": {
             "en": "Time of the peak (HH:MM)",
-            "fr": "Heure du pic (HH:MM)"
+            "fr": "Heure du pic (HH:MM)",
+            "de": "Uhrzeit der Spitze (HH:MM)",
+            "es": "Hora del pico (HH:MM)"
           }
         }
       ]
@@ -472,11 +592,15 @@
       "key": "get_forecast",
       "label": {
         "en": "Read the solar forecast",
-        "fr": "Lire la prévision solaire"
+        "fr": "Lire la prévision solaire",
+        "de": "Solarprognose lesen",
+        "es": "Leer la previsión solar"
       },
       "description": {
         "en": "Values of the forecast, usable in the next actions and conditions.",
-        "fr": "Valeurs de la prévision, utilisables dans les actions et conditions suivantes."
+        "fr": "Valeurs de la prévision, utilisables dans les actions et conditions suivantes.",
+        "de": "Werte der Prognose, nutzbar in den folgenden Aktionen und Bedingungen.",
+        "es": "Valores de la previsión, utilizables en las acciones y condiciones siguientes."
       },
       "timeout_seconds": 30,
       "fields": [
@@ -486,7 +610,9 @@
           "source": "devices",
           "label": {
             "en": "Solar forecast",
-            "fr": "Prévision solaire"
+            "fr": "Prévision solaire",
+            "de": "Solarprognose",
+            "es": "Previsión solar"
           },
           "required": true
         }
@@ -497,7 +623,9 @@
           "type": "number",
           "label": {
             "en": "Estimated power now (W)",
-            "fr": "Puissance estimée actuelle (W)"
+            "fr": "Puissance estimée actuelle (W)",
+            "de": "Geschätzte aktuelle Leistung (W)",
+            "es": "Potencia estimada actual (W)"
           }
         },
         {
@@ -505,7 +633,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy today (kWh)",
-            "fr": "Énergie estimée aujourd'hui (kWh)"
+            "fr": "Énergie estimée aujourd'hui (kWh)",
+            "de": "Geschätzte Energie heute (kWh)",
+            "es": "Energía estimada hoy (kWh)"
           }
         },
         {
@@ -513,7 +643,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy remaining today (kWh)",
-            "fr": "Énergie estimée restante aujourd'hui (kWh)"
+            "fr": "Énergie estimée restante aujourd'hui (kWh)",
+            "de": "Geschätzte Restenergie heute (kWh)",
+            "es": "Energía estimada restante hoy (kWh)"
           }
         },
         {
@@ -521,7 +653,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy tomorrow (kWh)",
-            "fr": "Énergie estimée demain (kWh)"
+            "fr": "Énergie estimée demain (kWh)",
+            "de": "Geschätzte Energie morgen (kWh)",
+            "es": "Energía estimada mañana (kWh)"
           }
         },
         {
@@ -529,7 +663,9 @@
           "type": "number",
           "label": {
             "en": "Peak power of the day (W)",
-            "fr": "Puissance du pic de la journée (W)"
+            "fr": "Puissance du pic de la journée (W)",
+            "de": "Spitzenleistung des Tages (W)",
+            "es": "Potencia del pico del día (W)"
           }
         },
         {
@@ -537,7 +673,9 @@
           "type": "string",
           "label": {
             "en": "Time of the peak (HH:MM)",
-            "fr": "Heure du pic (HH:MM)"
+            "fr": "Heure du pic (HH:MM)",
+            "de": "Uhrzeit der Spitze (HH:MM)",
+            "es": "Hora del pico (HH:MM)"
           }
         }
       ]
@@ -546,11 +684,15 @@
       "key": "get_production_next_hours",
       "label": {
         "en": "Solar production in the next hours",
-        "fr": "Production solaire des prochaines heures"
+        "fr": "Production solaire des prochaines heures",
+        "de": "Solarproduktion der nächsten Stunden",
+        "es": "Producción solar de las próximas horas"
       },
       "description": {
         "en": "Estimated energy produced from now over the chosen number of hours.",
-        "fr": "Énergie estimée produite à partir de maintenant sur le nombre d'heures choisi."
+        "fr": "Énergie estimée produite à partir de maintenant sur le nombre d'heures choisi.",
+        "de": "Geschätzte erzeugte Energie ab jetzt über die gewählte Anzahl Stunden.",
+        "es": "Energía estimada producida a partir de ahora durante el número de horas elegido."
       },
       "timeout_seconds": 30,
       "fields": [
@@ -560,7 +702,9 @@
           "source": "devices",
           "label": {
             "en": "Solar forecast",
-            "fr": "Prévision solaire"
+            "fr": "Prévision solaire",
+            "de": "Solarprognose",
+            "es": "Previsión solar"
           },
           "required": true
         },
@@ -569,7 +713,9 @@
           "type": "number",
           "label": {
             "en": "Hours",
-            "fr": "Heures"
+            "fr": "Heures",
+            "de": "Stunden",
+            "es": "Horas"
           },
           "required": true,
           "default": 3,
@@ -583,7 +729,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy (kWh)",
-            "fr": "Énergie estimée (kWh)"
+            "fr": "Énergie estimée (kWh)",
+            "de": "Geschätzte Energie (kWh)",
+            "es": "Energía estimada (kWh)"
           }
         },
         {
@@ -591,7 +739,9 @@
           "type": "number",
           "label": {
             "en": "Average power (W)",
-            "fr": "Puissance moyenne (W)"
+            "fr": "Puissance moyenne (W)",
+            "de": "Durchschnittliche Leistung (W)",
+            "es": "Potencia media (W)"
           }
         },
         {
@@ -599,7 +749,9 @@
           "type": "number",
           "label": {
             "en": "Maximum power (W)",
-            "fr": "Puissance maximale (W)"
+            "fr": "Puissance maximale (W)",
+            "de": "Maximale Leistung (W)",
+            "es": "Potencia máxima (W)"
           }
         }
       ]
@@ -608,11 +760,15 @@
       "key": "find_best_window",
       "label": {
         "en": "Find the best solar time slot",
-        "fr": "Trouver le meilleur créneau solaire"
+        "fr": "Trouver le meilleur créneau solaire",
+        "de": "Besten Solar-Zeitraum finden",
+        "es": "Buscar la mejor franja solar"
       },
       "description": {
         "en": "Best moment to run an appliance of the given duration on solar power.",
-        "fr": "Meilleur moment pour faire tourner un appareil de la durée choisie sur le solaire."
+        "fr": "Meilleur moment pour faire tourner un appareil de la durée choisie sur le solaire.",
+        "de": "Bester Zeitpunkt, um ein Gerät der gewählten Dauer mit Solarstrom zu betreiben.",
+        "es": "Mejor momento para hacer funcionar un aparato de la duración elegida con energía solar."
       },
       "timeout_seconds": 30,
       "fields": [
@@ -622,7 +778,9 @@
           "source": "devices",
           "label": {
             "en": "Solar forecast",
-            "fr": "Prévision solaire"
+            "fr": "Prévision solaire",
+            "de": "Solarprognose",
+            "es": "Previsión solar"
           },
           "required": true
         },
@@ -631,7 +789,9 @@
           "type": "number",
           "label": {
             "en": "Duration (hours)",
-            "fr": "Durée (heures)"
+            "fr": "Durée (heures)",
+            "de": "Dauer (Stunden)",
+            "es": "Duración (horas)"
           },
           "required": true,
           "default": 2,
@@ -643,7 +803,9 @@
           "type": "select",
           "label": {
             "en": "Day",
-            "fr": "Jour"
+            "fr": "Jour",
+            "de": "Tag",
+            "es": "Día"
           },
           "required": true,
           "default": "today",
@@ -653,14 +815,18 @@
               "value": "today",
               "label": {
                 "en": "Today (from now)",
-                "fr": "Aujourd'hui (à partir de maintenant)"
+                "fr": "Aujourd'hui (à partir de maintenant)",
+                "de": "Heute (ab jetzt)",
+                "es": "Hoy (a partir de ahora)"
               }
             },
             {
               "value": "tomorrow",
               "label": {
                 "en": "Tomorrow",
-                "fr": "Demain"
+                "fr": "Demain",
+                "de": "Morgen",
+                "es": "Mañana"
               }
             }
           ]
@@ -672,7 +838,9 @@
           "type": "boolean",
           "label": {
             "en": "Slot found",
-            "fr": "Créneau trouvé"
+            "fr": "Créneau trouvé",
+            "de": "Zeitraum gefunden",
+            "es": "Franja encontrada"
           }
         },
         {
@@ -680,7 +848,9 @@
           "type": "string",
           "label": {
             "en": "Start time (HH:MM)",
-            "fr": "Heure de début (HH:MM)"
+            "fr": "Heure de début (HH:MM)",
+            "de": "Startzeit (HH:MM)",
+            "es": "Hora de inicio (HH:MM)"
           }
         },
         {
@@ -688,7 +858,9 @@
           "type": "string",
           "label": {
             "en": "End time (HH:MM)",
-            "fr": "Heure de fin (HH:MM)"
+            "fr": "Heure de fin (HH:MM)",
+            "de": "Endzeit (HH:MM)",
+            "es": "Hora de fin (HH:MM)"
           }
         },
         {
@@ -696,7 +868,9 @@
           "type": "number",
           "label": {
             "en": "Estimated energy in the slot (kWh)",
-            "fr": "Énergie estimée sur le créneau (kWh)"
+            "fr": "Énergie estimée sur le créneau (kWh)",
+            "de": "Geschätzte Energie im Zeitraum (kWh)",
+            "es": "Energía estimada en la franja (kWh)"
           }
         },
         {
@@ -704,7 +878,9 @@
           "type": "number",
           "label": {
             "en": "Minutes until the start",
-            "fr": "Minutes avant le début"
+            "fr": "Minutes avant le début",
+            "de": "Minuten bis zum Start",
+            "es": "Minutos hasta el inicio"
           }
         }
       ]
@@ -715,11 +891,15 @@
       "key": "solar_forecast",
       "label": {
         "en": "Solar forecast",
-        "fr": "Prévision solaire"
+        "fr": "Prévision solaire",
+        "de": "Solarprognose",
+        "es": "Previsión solar"
       },
       "description": {
         "en": "Power now, energy today and tomorrow, and the power curve.",
-        "fr": "Puissance actuelle, énergie du jour et du lendemain, et la courbe."
+        "fr": "Puissance actuelle, énergie du jour et du lendemain, et la courbe.",
+        "de": "Aktuelle Leistung, Energie heute und morgen sowie die Leistungskurve.",
+        "es": "Potencia actual, energía de hoy y mañana, y la curva de potencia."
       },
       "icon": "sun",
       "settings": [
@@ -729,7 +909,9 @@
           "source": "devices",
           "label": {
             "en": "Solar forecast",
-            "fr": "Prévision solaire"
+            "fr": "Prévision solaire",
+            "de": "Solarprognose",
+            "es": "Previsión solar"
           },
           "required": true
         }
@@ -739,11 +921,15 @@
       "key": "solar_best_window",
       "label": {
         "en": "Best solar time slot",
-        "fr": "Meilleur créneau solaire"
+        "fr": "Meilleur créneau solaire",
+        "de": "Bester Solar-Zeitraum",
+        "es": "Mejor franja solar"
       },
       "description": {
         "en": "When to run an appliance on solar power, today and tomorrow.",
-        "fr": "Quand lancer un appareil sur le solaire, aujourd'hui et demain."
+        "fr": "Quand lancer un appareil sur le solaire, aujourd'hui et demain.",
+        "de": "Wann ein Gerät mit Solarstrom laufen sollte, heute und morgen.",
+        "es": "Cuándo poner en marcha un aparato con energía solar, hoy y mañana."
       },
       "icon": "clock",
       "settings": [
@@ -753,7 +939,9 @@
           "source": "devices",
           "label": {
             "en": "Solar forecast",
-            "fr": "Prévision solaire"
+            "fr": "Prévision solaire",
+            "de": "Solarprognose",
+            "es": "Previsión solar"
           },
           "required": true
         },
@@ -762,7 +950,9 @@
           "type": "number",
           "label": {
             "en": "Appliance duration (hours)",
-            "fr": "Durée de l'appareil (heures)"
+            "fr": "Durée de l'appareil (heures)",
+            "de": "Laufzeit des Geräts (Stunden)",
+            "es": "Duración del aparato (horas)"
           },
           "required": true,
           "default": 2,
