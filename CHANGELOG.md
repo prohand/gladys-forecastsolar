@@ -6,6 +6,17 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Search keywords in the store catalog (photovoltaic, solar panels, kWp…).
+
+### Changed
+
+- Requires Gladys 5.3.0 or later (catalog keywords).
+- Gladys integration SDK 0.16.
+- The release workflow runs the full store admission check once the image is published;
+  pull requests run it without the image check.
+
 ## [1.4.1] - 2026-10-23
 
 - Maintenance release, no functional change.

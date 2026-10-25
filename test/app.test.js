@@ -46,7 +46,7 @@ test('one device is discovered per located house', async () => {
   assert.equal(devices[0].name, 'Solar forecast (Home)');
   assert.ok(GLADYS_POLL_FREQUENCIES.includes(devices[0].poll_frequency));
   assert.equal(devices[0].poll_frequency, POLL_FREQUENCY_MS);
-  // Without should_poll the core never schedules the device.
+  // Before Gladys 5.3 the core never scheduled a device without should_poll.
   assert.equal(devices[0].should_poll, true);
   assert.equal(devices[0].features.length, 4);
 });

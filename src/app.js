@@ -512,9 +512,10 @@ export function createApp(
 
     /**
      * One tick of the app's own refresh loop (index.js, every minute): poll
-     * every device the user created. Gladys only schedules the devices whose
-     * row carries `should_poll: true`, read once at creation, so the ones
-     * created before that flag was published would otherwise never refresh.
+     * every device the user created. Gladys cores before 5.3 only scheduled
+     * the devices whose row carries `should_poll: true`, read once at
+     * creation, so the ones created before that flag was published would
+     * otherwise never refresh.
      * Shares `lastPollAt` with poll(), so a device Gladys also polls is still
      * evaluated once a minute.
      */

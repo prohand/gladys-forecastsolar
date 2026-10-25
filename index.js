@@ -28,8 +28,8 @@ process.on('unhandledRejection', (reason) => {
 const gladys = new GladysIntegration();
 const app = createApp(gladys);
 
-// The app's own refresh loop: Gladys only polls the devices created with
-// `should_poll: true`, so an older device would otherwise stay frozen.
+// The app's own refresh loop: Gladys cores before 5.3 only polled the devices
+// created with `should_poll: true`, so an older device would otherwise stay frozen.
 const REFRESH_LOOP_MS = 60 * 1000;
 let refreshTimer = null;
 function startRefreshLoop() {

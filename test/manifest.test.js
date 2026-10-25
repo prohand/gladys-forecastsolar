@@ -70,12 +70,71 @@ test('the house location is requested', () => {
   assert.equal(manifest.location, true);
 });
 
-test('widgets and scenes require Gladys >= 5.1.0', () => {
-  const minVersion = manifest.gladys_version.match(/>=\s*(\d+)\.(\d+)\.\d+/);
-  assert.ok(minVersion, 'gladys_version must declare a minimum version');
-  const [, major, minor] = minVersion.map(Number);
-  assert.ok(major > 5 || (major === 5 && minor >= 1), manifest.gladys_version);
+// The store's catalog shelves (Gladys 5.3 added transport, vehicles, servers and leisure).
+// An unknown key is only dropped with a warning, so a typo would silently cost the shelf.
+const CATALOG_CATEGORIES = [
+  'climate',
+  'lighting',
+  'energy',
+  'security',
+  'multimedia',
+  'appliances',
+  'environment',
+  'protocols',
+  'network',
+  'notifications',
+  'assistants',
+  'services',
+  'transport',
+  'vehicles',
+  'servers',
+  'leisure',
+];
+
+/** Minimum version of a `>=X.Y.Z` range, compared as numbers (never as text). */
+function floorAtLeast(range, [major, minor, patch]) {
+  const match = range.match(/>=\s*(\d+)\.(\d+)\.(\d+)/);
+  assert.ok(match, `gladys_version must declare a minimum version: ${range}`);
+  const floor = match.slice(1).map(Number);
+  const wanted = [major, minor, patch];
+  for (let i = 0; i < 3; i += 1) {
+    if (floor[i] !== wanted[i]) {
+      return floor[i] > wanted[i];
+    }
+  }
+  return true;
+}
+
+test('the Gladys version floor covers every field the manifest declares', () => {
+  // categories: 4.86.0; widgets and scenes: 5.1.0; keywords / countries / music: 5.3.0.
+  // An older core rejects any manifest field it does not know.
+  assert.ok(floorAtLeast(manifest.gladys_version, [4, 86, 0]), manifest.gladys_version);
+  assert.ok(floorAtLeast(manifest.gladys_version, [5, 1, 0]), manifest.gladys_version);
+  if (manifest.keywords || manifest.countries || manifest.music) {
+    assert.ok(floorAtLeast(manifest.gladys_version, [5, 3, 0]), manifest.gladys_version);
+  }
+});
+
+test('categories are 1 to 3 unique keys of the store vocabulary', () => {
   assert.ok(manifest.categories.length >= 1 && manifest.categories.length <= 3);
+  assert.equal(new Set(manifest.categories).size, manifest.categories.length);
+  for (const category of manifest.categories) {
+    assert.ok(CATALOG_CATEGORIES.includes(category), category);
+  }
+});
+
+test('keywords are 1 to 10 unique search terms of 2 to 30 characters', () => {
+  assert.ok(Array.isArray(manifest.keywords));
+  assert.ok(manifest.keywords.length >= 1 && manifest.keywords.length <= 10);
+  const normalized = manifest.keywords.map((keyword) => keyword.trim().toLowerCase());
+  assert.equal(new Set(normalized).size, normalized.length, 'keywords must be unique');
+  for (const keyword of normalized) {
+    assert.ok(keyword.length >= 2 && keyword.length <= 30, keyword);
+  }
+});
+
+test('no countries: Forecast.Solar covers the whole world', () => {
+  assert.equal(manifest.countries, undefined);
 });
 
 test('manifest version and image tag follow package.json', () => {
