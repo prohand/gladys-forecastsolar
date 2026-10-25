@@ -8,7 +8,7 @@ A Gladys Assistant **external integration** (Node 22+, ESM, no build step, one r
 dependency: `@gladysassistant/integration-sdk`) that publishes the **solar production forecast**
 of PV panels from the free [Forecast.Solar](https://forecast.solar) API. One device per
 **located** Gladys house; the panels (tilt, azimuth, peak power in Wp, optional API key) are
-described once in the configuration. Requires Gladys 5.1.0+.
+described once in the configuration. Requires Gladys 5.3.0+.
 
 ## Commands
 
@@ -63,8 +63,9 @@ src/widgets.js               widgets solar_forecast and solar_best_window (pure)
   request URL is logged through `redactedEstimateUrl()`.
 - **Polling**: devices declare `DEVICE_POLL_FREQUENCIES.EVERY_MINUTES` (60000 ms, the slowest
   value Gladys accepts; any
-  other value rejects the whole discovery) and `should_poll: true` (default `false` in the core,
-  read once at creation). `app.pollCreated()`, run every minute by index.js, covers the devices
+  other value rejects the whole discovery) and `should_poll: true` (redundant since Gladys 5.3,
+  which sets it when `poll_frequency` is present; cores before it defaulted to `false`; read once
+  at creation). `app.pollCreated()`, run every minute by index.js, covers the devices
   created before that flag; both paths share `lastPollAt` (`MIN_POLL_GAP_MS`), so a device is
   evaluated once a minute.
 - **Scene events only come from `poll()`**, never from a scene action (a scene bound to the
@@ -80,7 +81,10 @@ src/widgets.js               widgets solar_forecast and solar_best_window (pure)
 ### Manifest
 
 `test/manifest.test.js` ties `gladys-assistant-integration.json` to `DEFAULT_CONFIG`, the config
-bounds, the action/widget/scene keys and their outputs. Change both sides together.
+bounds, the action/widget/scene keys and their outputs, and the store rules of Gladys 5.3:
+`gladys_version >=5.3.0` (required by `keywords`), `categories` in the store vocabulary, 1-10
+`keywords` of 2-30 characters, no `countries` (Forecast.Solar is worldwide). Change both sides
+together.
 
 ## Testing
 

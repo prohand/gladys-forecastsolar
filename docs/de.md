@@ -4,7 +4,7 @@ Diese Integration zeigt in Gladys die **Ertragsprognose** deiner Solarmodule
 an, berechnet vom kostenlosen Dienst [Forecast.Solar](https://forecast.solar)
 auf Grundlage der Wettervorhersage.
 
-Erfordert **Gladys 5.1.0** oder neuer.
+Erfordert **Gladys 5.3.0** oder neuer.
 
 ## Häuser
 

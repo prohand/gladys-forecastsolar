@@ -4,7 +4,7 @@ Esta integración muestra en Gladys la **previsión de producción** de sus
 paneles solares, calculada por el servicio gratuito
 [Forecast.Solar](https://forecast.solar) a partir de la previsión meteorológica.
 
-Requiere **Gladys 5.1.0** o posterior.
+Requiere **Gladys 5.3.0** o posterior.
 
 ## Viviendas
 

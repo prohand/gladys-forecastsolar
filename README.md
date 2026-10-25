@@ -14,7 +14,7 @@ User documentation: [English](docs/en.md) · [Français](docs/fr.md) · [Deutsch
 
 ## Features
 
-Requires **Gladys 5.1.0+** (dashboard widgets and scene declarations).
+Requires **Gladys 5.3.0+** (dashboard widgets, scene declarations and the catalog search keywords).
 
 - **Houses**: the manifest declares `"location": true`; one device per
   **located** Gladys house is discovered. Only the devices the user adds are

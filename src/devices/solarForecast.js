@@ -56,10 +56,11 @@ export function buildDevice(gladys, house) {
     name: `Solar forecast (${house.name})`,
     external_id: ids.device,
     poll_frequency: POLL_FREQUENCY_MS,
-    // Gladys only schedules a device that also asks for it (`should_poll` is
-    // false by default in the core): without it the forecast was never
-    // refreshed after the device was created. The core reads the flag once,
-    // at creation; older devices are covered by the app's own loop.
+    // Gladys 5.3+ schedules a device as soon as it has a `poll_frequency`;
+    // older cores only did with `should_poll: true` (false by default), and
+    // the forecast was never refreshed. Kept: redundant now, harmless, and the
+    // devices created before the flag are covered by the app's own loop. The
+    // core reads both fields once, at creation.
     should_poll: true,
     features: [
       {
