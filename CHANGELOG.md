@@ -6,6 +6,8 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.5.2] - 2026-11-16
+
 - Update `@gladysassistant/integration-sdk` to 0.16.1 (security update).
 
 ## [1.5.1] - 2026-11-16
@@ -119,7 +121,8 @@ First public release.
 
 - Peak power typed in Wp so the Gladys form accepts it
 
-[Unreleased]: https://github.com/prohand/gladys-forecastsolar/compare/v1.5.1...HEAD
+[Unreleased]: https://github.com/prohand/gladys-forecastsolar/compare/v1.5.2...HEAD
+[1.5.2]: https://github.com/prohand/gladys-forecastsolar/compare/v1.5.1...v1.5.2
 [1.5.1]: https://github.com/prohand/gladys-forecastsolar/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/prohand/gladys-forecastsolar/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/prohand/gladys-forecastsolar/compare/v1.4.0...v1.4.1
